@@ -1,26 +1,374 @@
-@import "tailwindcss";
+/* Manrope Font Import - must be first */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   CATALYST LABS DESIGN SYSTEM
+   ============================================ */
 
 @theme inline {
+  /* Font */
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+
+  /* Colors from theme */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ============================================
+   CATALYST LABS COLOR PALETTE
+   ============================================
+   Primary Colors:
+   - Deep Dark Base: #040F13
+   - Orange Accent: #FC6C00
+   - Blue Accent: #0077F9
+
+   Grayscale:
+   - Cloud: #EDEFF7
+   - Smoke: #D3D6E0
+   - Steel: #BCBFCC
+   - Space: #9DA2B3
+   - Graphite: #6E7180
+   - Arsenic: #40424D
+   - Phantom: #1E1E24
+   - Black: #000000
+   ============================================ */
+
+:root {
+  /* Catalyst Labs Brand Colors */
+  --catalyst-base: #040F13;
+  --catalyst-orange: #FC6C00;
+  --catalyst-blue: #0077F9;
+
+  /* Grayscale Palette */
+  --catalyst-cloud: #EDEFF7;
+  --catalyst-smoke: #D3D6E0;
+  --catalyst-steel: #BCBFCC;
+  --catalyst-space: #9DA2B3;
+  --catalyst-graphite: #6E7180;
+  --catalyst-arsenic: #40424D;
+  --catalyst-phantom: #1E1E24;
+  --catalyst-black: #000000;
+
+  /* Base radius */
+  --radius: 0.5rem;
+
+  /* Light mode (minimal - dark-first design) */
+  --background: #EDEFF7;
+  --foreground: #040F13;
+  --card: #ffffff;
+  --card-foreground: #040F13;
+  --popover: #ffffff;
+  --popover-foreground: #040F13;
+  --primary: #FC6C00;
+  --primary-foreground: #ffffff;
+  --secondary: #0077F9;
+  --secondary-foreground: #ffffff;
+  --muted: #D3D6E0;
+  --muted-foreground: #6E7180;
+  --accent: #0077F9;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: #BCBFCC;
+  --input: #D3D6E0;
+  --ring: #FC6C00;
+
+  /* Charts */
+  --chart-1: #FC6C00;
+  --chart-2: #0077F9;
+  --chart-3: #9DA2B3;
+  --chart-4: #40424D;
+  --chart-5: #1E1E24;
+
+  /* Sidebar */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #040F13;
+  --sidebar-primary: #FC6C00;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #EDEFF7;
+  --sidebar-accent-foreground: #040F13;
+  --sidebar-border: #D3D6E0;
+  --sidebar-ring: #FC6C00;
+}
+
+/* Dark mode (primary mode for Catalyst Labs) */
+.dark {
+  --background: #040F13;
+  --foreground: #EDEFF7;
+  --card: #1E1E24;
+  --card-foreground: #EDEFF7;
+  --popover: #1E1E24;
+  --popover-foreground: #EDEFF7;
+  --primary: #FC6C00;
+  --primary-foreground: #ffffff;
+  --secondary: #0077F9;
+  --secondary-foreground: #ffffff;
+  --muted: #40424D;
+  --muted-foreground: #9DA2B3;
+  --accent: #0077F9;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: #40424D;
+  --input: #40424D;
+  --ring: #FC6C00;
+
+  /* Charts */
+  --chart-1: #FC6C00;
+  --chart-2: #0077F9;
+  --chart-3: #9DA2B3;
+  --chart-4: #BCBFCC;
+  --chart-5: #EDEFF7;
+
+  /* Sidebar */
+  --sidebar: #1E1E24;
+  --sidebar-foreground: #EDEFF7;
+  --sidebar-primary: #FC6C00;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #40424D;
+  --sidebar-accent-foreground: #EDEFF7;
+  --sidebar-border: #40424D;
+  --sidebar-ring: #FC6C00;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Typography Scale */
+  h1 {
+    @apply text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl font-bold tracking-tight md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold tracking-tight;
+  }
+
+  h4 {
+    @apply text-xl font-semibold;
+  }
+
+  h5 {
+    @apply text-lg font-medium;
+  }
+
+  h6 {
+    @apply text-base font-medium;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================
+   CATALYST LABS UTILITY CLASSES
+   ============================================ */
+
+@layer utilities {
+  /* Text colors */
+  .text-catalyst-orange {
+    color: var(--catalyst-orange);
+  }
+
+  .text-catalyst-blue {
+    color: var(--catalyst-blue);
+  }
+
+  /* Background colors */
+  .bg-catalyst-base {
+    background-color: var(--catalyst-base);
+  }
+
+  .bg-catalyst-phantom {
+    background-color: var(--catalyst-phantom);
+  }
+
+  .bg-catalyst-arsenic {
+    background-color: var(--catalyst-arsenic);
+  }
+
+  .bg-catalyst-orange {
+    background-color: var(--catalyst-orange);
+  }
+
+  .bg-catalyst-blue {
+    background-color: var(--catalyst-blue);
+  }
+
+  /* Gradient utilities */
+  .gradient-catalyst {
+    background: linear-gradient(135deg, var(--catalyst-base) 0%, var(--catalyst-phantom) 100%);
+  }
+
+  .gradient-catalyst-subtle {
+    background: linear-gradient(180deg, var(--catalyst-phantom) 0%, var(--catalyst-base) 100%);
+  }
+
+  .gradient-orange-glow {
+    background: radial-gradient(ellipse at center, rgba(252, 108, 0, 0.15) 0%, transparent 70%);
+  }
+
+  .gradient-blue-glow {
+    background: radial-gradient(ellipse at center, rgba(0, 119, 249, 0.15) 0%, transparent 70%);
+  }
+
+  /* Border colors */
+  .border-catalyst-subtle {
+    border-color: var(--catalyst-arsenic);
+  }
+
+  /* Glow effects (restrained, professional) */
+  .glow-orange {
+    box-shadow: 0 0 20px rgba(252, 108, 0, 0.2);
+  }
+
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(0, 119, 249, 0.2);
+  }
+
+  /* Surface system - uses CSS variables for proper light/dark support */
+  .surface-base {
+    background-color: var(--background);
+  }
+
+  .surface-elevated {
+    background-color: var(--card);
+  }
+
+  .surface-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+  }
+
+  /* Gradient utilities with light mode support */
+  .gradient-catalyst-adaptive {
+    background: linear-gradient(135deg, var(--background) 0%, var(--card) 100%);
+  }
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+@layer base {
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* Light mode scrollbar */
+  ::-webkit-scrollbar-track {
+    background: var(--catalyst-cloud);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--catalyst-steel);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--catalyst-space);
+  }
+
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar-track {
+    background: var(--catalyst-base);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: var(--catalyst-arsenic);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: var(--catalyst-graphite);
+  }
+}
+
+/* ============================================
+   FOCUS STATES (Accessibility)
+   ============================================ */
+
+@layer base {
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--catalyst-orange);
+  }
+
+  button:focus-visible,
+  [role="button"]:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--catalyst-orange);
+  }
+
+  a:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--catalyst-blue);
+    border-radius: 4px;
+  }
+}
+
+/* ============================================
+   ANIMATION UTILITIES
+   ============================================ */
+
+@layer utilities {
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 10px rgba(252, 108, 0, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(252, 108, 0, 0.4);
+    }
+  }
 }
