@@ -160,7 +160,7 @@ function DocumentsPageContent() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold">Documents</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             Generate and manage AI-powered documents
           </p>
         </div>
@@ -263,8 +263,8 @@ function DocumentsPageContent() {
           {!selectedProject ? (
             <Card>
               <CardContent className="py-6 sm:py-8 text-center">
-                <FileText className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-slate-300" />
-                <p className="mt-2 text-sm text-slate-500">
+                <FileText className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50" />
+                <p className="mt-2 text-sm text-muted-foreground">
                   Select a project to view documents
                 </p>
               </CardContent>
@@ -272,8 +272,8 @@ function DocumentsPageContent() {
           ) : documents.length === 0 ? (
             <Card>
               <CardContent className="py-6 sm:py-8 text-center">
-                <FileText className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-slate-300" />
-                <p className="mt-2 text-sm text-slate-500">
+                <FileText className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50" />
+                <p className="mt-2 text-sm text-muted-foreground">
                   No documents yet
                 </p>
                 <Button
@@ -286,26 +286,26 @@ function DocumentsPageContent() {
             </Card>
           ) : (
             <div className="space-y-2 pb-4">
-              <h3 className="text-sm font-medium text-slate-500">Documents</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Documents</h3>
               {documents.map((doc) => (
                 <button
                   key={doc.id}
                   onClick={() => handleSelectDocument(doc)}
                   className={`w-full rounded-lg border p-3 text-left transition-colors ${
                     selectedDocument?.id === doc.id
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-                      : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:bg-muted'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 flex-shrink-0 text-slate-500" />
+                    <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
                     <span className="truncate font-medium text-sm">{doc.title}</span>
                   </div>
                   <div className="mt-1 flex items-center gap-2 flex-wrap">
                     <Badge variant="secondary" className="text-xs">
                       {DOCUMENT_TYPE_LABELS[doc.type]}
                     </Badge>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(doc.createdAt))} ago
                     </span>
                   </div>
@@ -332,11 +332,11 @@ function DocumentsPageContent() {
           ) : (
             <Card className="flex h-64 sm:h-96 items-center justify-center">
               <CardContent className="text-center p-6">
-                <FileText className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-slate-300" />
+                <FileText className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
                 <h2 className="mt-4 text-lg sm:text-xl font-semibold">
                   Select a Document
                 </h2>
-                <p className="mt-2 text-sm text-slate-500 max-w-sm">
+                <p className="mt-2 text-sm text-muted-foreground max-w-sm">
                   Choose a document from the list to preview it
                 </p>
               </CardContent>

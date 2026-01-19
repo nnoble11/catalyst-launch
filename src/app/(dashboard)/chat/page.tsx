@@ -226,11 +226,11 @@ function ChatPageContent() {
         </div>
 
         <div className="flex-1 overflow-auto space-y-2 pb-4">
-          <h3 className="text-sm font-medium text-slate-500 sticky top-0 bg-background pb-2">
+          <h3 className="text-sm font-medium text-muted-foreground sticky top-0 bg-background pb-2">
             Recent Conversations
           </h3>
           {conversations.length === 0 ? (
-            <p className="text-sm text-slate-400">No conversations yet</p>
+            <p className="text-sm text-muted-foreground">No conversations yet</p>
           ) : (
             conversations.map((conv) => (
               <div
@@ -238,13 +238,13 @@ function ChatPageContent() {
                 onClick={() => setSelectedConversation(conv.id)}
                 className={`group relative w-full cursor-pointer rounded-lg border p-3 text-left transition-colors ${
                   selectedConversation === conv.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-                    : 'border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:bg-muted'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <MessageSquare className="h-4 w-4 shrink-0 text-slate-500" />
+                    <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="truncate font-medium text-sm">
                       {conv.title || 'Untitled'}
                     </span>
@@ -257,7 +257,7 @@ function ChatPageContent() {
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(conv.updatedAt))} ago
                 </p>
               </div>
@@ -289,9 +289,9 @@ function ChatPageContent() {
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center p-6 sm:p-8">
-            <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 text-slate-300" />
+            <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
             <h2 className="mt-4 text-lg sm:text-xl font-semibold text-center">Start a Conversation</h2>
-            <p className="mt-2 text-center text-sm sm:text-base text-slate-500 max-w-sm">
+            <p className="mt-2 text-center text-sm sm:text-base text-muted-foreground max-w-sm">
               Select an existing conversation or start a new one to chat with
               your AI startup coach.
             </p>

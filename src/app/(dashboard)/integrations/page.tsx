@@ -273,12 +273,12 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Integrations</h1>
-          <p className="text-slate-500">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Integrations</h1>
+          <p className="text-sm text-muted-foreground">
             Connect your tools to build your second brain. Capture, sync, and organize information from anywhere.
           </p>
         </div>
@@ -319,10 +319,10 @@ export default function IntegrationsPage() {
 
         <TabsContent value={activeCategory} className="mt-6">
           {activeCategory === 'connected' && connectedCount === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-300 p-12 text-center dark:border-slate-700">
-              <Globe className="mx-auto h-12 w-12 text-slate-400" />
+            <div className="rounded-lg border border-dashed border-border p-12 text-center dark:border-slate-700">
+              <Globe className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">No Integrations Connected</h3>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm text-muted-foreground">
                 Connect your first integration to start building your second brain.
               </p>
               <Button
@@ -413,12 +413,12 @@ export default function IntegrationsPage() {
 
       {/* Stats Footer */}
       {connectedCount > 0 && (
-        <div className="rounded-lg bg-slate-50 p-4 dark:bg-slate-900">
+        <div className="rounded-lg bg-muted/50 p-4 dark:bg-slate-900">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-slate-400" />
-                <span className="text-slate-600 dark:text-slate-400">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-slate-600 dark:text-muted-foreground">
                   Last sync: Recently
                 </span>
               </div>

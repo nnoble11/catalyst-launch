@@ -142,11 +142,11 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Idea Leaderboard</h1>
-          <p className="text-slate-500">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Idea Leaderboard</h1>
+          <p className="text-sm text-muted-foreground">
             Discover and vote on startup ideas from the community
           </p>
         </div>
@@ -215,9 +215,9 @@ export default function LeaderboardPage() {
       {ideas.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Lightbulb className="h-16 w-16 text-slate-300" />
+            <Lightbulb className="h-16 w-16 text-muted-foreground/50" />
             <h2 className="mt-4 text-xl font-semibold">No ideas yet</h2>
-            <p className="mt-2 text-slate-500">
+            <p className="mt-2 text-muted-foreground">
               Be the first to share your startup idea!
             </p>
             <Button
@@ -234,7 +234,7 @@ export default function LeaderboardPage() {
           {ideas.map((idea, index) => (
             <Card key={idea.id} className="overflow-hidden">
               <div className="flex">
-                <div className="flex flex-col items-center justify-center border-r border-slate-200 px-4 py-6 dark:border-slate-800">
+                <div className="flex flex-col items-center justify-center border-r border-border px-4 py-6 dark:border-slate-800">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -256,29 +256,22 @@ export default function LeaderboardPage() {
                       <div className="flex items-center gap-2">
                         {index < 3 && (
                           <Badge
-                            variant="secondary"
-                            className={
-                              index === 0
-                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                                : index === 1
-                                  ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200'
-                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
-                            }
+                            variant={index === 0 ? 'warning' : index === 1 ? 'outline' : 'default'}
                           >
                             #{index + 1}
                           </Badge>
                         )}
                         <h3 className="font-semibold">{idea.title}</h3>
                       </div>
-                      <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                      <p className="mt-2 text-sm text-muted-foreground">
                         {idea.description}
                       </p>
                     </div>
                     {index === 0 && (
-                      <TrendingUp className="h-5 w-5 text-green-600" />
+                      <TrendingUp className="h-5 w-5 text-success" />
                     )}
                   </div>
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className="mt-2 text-xs text-muted-foreground">
                     Posted {formatDistanceToNow(new Date(idea.createdAt))} ago
                   </p>
                 </div>
