@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, ChevronLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChatInterface } from '@/components/ai/ChatInterface';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface Conversation {
   id: string;
@@ -46,6 +47,7 @@ function ChatPageContent() {
   const [selectedProject, setSelectedProject] = useState<string | null>(projectIdFromUrl);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -103,6 +105,10 @@ function ChatPageContent() {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation);
+      // Hide sidebar on mobile when conversation is selected
+      if (window.innerWidth < 768) {
+        setShowSidebar(false);
+      }
     } else {
       setMessages([]);
     }
@@ -158,21 +164,40 @@ function ChatPageContent() {
 
   if (loading) {
     return (
-      <div className="flex h-full gap-6">
-        <div className="w-80 space-y-4">
+      <div className="flex h-full gap-4 sm:gap-6">
+        <div className="w-full md:w-80 space-y-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
         </div>
-        <Skeleton className="flex-1" />
+        <Skeleton className="hidden md:block flex-1" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-6">
+    <div className="flex h-[calc(100vh-8rem)] gap-4 sm:gap-6">
+      {/* Mobile overlay for sidebar */}
+      {showSidebar && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-80 flex flex-col space-y-4 overflow-hidden">
+      <div className={cn(
+        'fixed inset-y-0 left-0 z-40 w-[85vw] max-w-[320px] bg-background border-r md:static md:w-80 md:z-auto flex flex-col space-y-4 overflow-hidden transition-transform duration-300 pt-4 md:pt-0 px-4 md:px-0',
+        showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      )}>
+        {/* Mobile close button */}
+        <div className="flex items-center justify-between md:hidden mb-2">
+          <h2 className="font-semibold">Conversations</h2>
+          <Button variant="ghost" size="icon" onClick={() => setShowSidebar(false)}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+        </div>
+
         <div className="space-y-2 shrink-0">
           <Select
             value={selectedProject || 'all'}
@@ -200,7 +225,7 @@ function ChatPageContent() {
           </Button>
         </div>
 
-        <div className="flex-1 overflow-auto space-y-2">
+        <div className="flex-1 overflow-auto space-y-2 pb-4">
           <h3 className="text-sm font-medium text-slate-500 sticky top-0 bg-background pb-2">
             Recent Conversations
           </h3>
@@ -220,7 +245,7 @@ function ChatPageContent() {
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <MessageSquare className="h-4 w-4 shrink-0 text-slate-500" />
-                    <span className="truncate font-medium">
+                    <span className="truncate font-medium text-sm">
                       {conv.title || 'Untitled'}
                     </span>
                   </div>
@@ -243,6 +268,19 @@ function ChatPageContent() {
 
       {/* Chat Area */}
       <Card className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile header with toggle */}
+        <div className="flex items-center gap-2 p-3 border-b md:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setShowSidebar(true)}>
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span className="font-medium text-sm truncate">
+            {selectedConversation
+              ? conversations.find(c => c.id === selectedConversation)?.title || 'Chat'
+              : 'Select a conversation'
+            }
+          </span>
+        </div>
+
         {selectedConversation ? (
           <ChatInterface
             conversationId={selectedConversation}
@@ -250,10 +288,10 @@ function ChatPageContent() {
             initialMessages={messages}
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center p-8">
-            <MessageSquare className="h-16 w-16 text-slate-300" />
-            <h2 className="mt-4 text-xl font-semibold">Start a Conversation</h2>
-            <p className="mt-2 text-center text-slate-500">
+          <div className="flex h-full flex-col items-center justify-center p-6 sm:p-8">
+            <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 text-slate-300" />
+            <h2 className="mt-4 text-lg sm:text-xl font-semibold text-center">Start a Conversation</h2>
+            <p className="mt-2 text-center text-sm sm:text-base text-slate-500 max-w-sm">
               Select an existing conversation or start a new one to chat with
               your AI startup coach.
             </p>
@@ -272,12 +310,12 @@ export default function ChatPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-full gap-6">
-          <div className="w-80 space-y-4">
+        <div className="flex h-full gap-4 sm:gap-6">
+          <div className="w-full md:w-80 space-y-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-20 w-full" />
           </div>
-          <Skeleton className="flex-1" />
+          <Skeleton className="hidden md:block flex-1" />
         </div>
       }
     >

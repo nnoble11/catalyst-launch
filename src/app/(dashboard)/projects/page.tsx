@@ -137,25 +137,25 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
             Projects
           </h1>
-          <p className="text-slate-500">
+          <p className="text-sm text-slate-500">
             Manage your startup projects and track progress
           </p>
         </div>
 
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] mx-4 sm:mx-auto">
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
               <DialogDescription>
@@ -206,14 +206,15 @@ export default function ProjectsPage() {
                 </Select>
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 onClick={() => setIsCreateDialogOpen(false)}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
-              <Button onClick={createProject} disabled={createLoading}>
+              <Button onClick={createProject} disabled={createLoading} className="w-full sm:w-auto">
                 {createLoading ? 'Creating...' : 'Create Project'}
               </Button>
             </DialogFooter>
@@ -222,12 +223,12 @@ export default function ProjectsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-16 dark:border-slate-700">
-          <FolderKanban className="h-12 w-12 text-slate-400" />
-          <h3 className="mt-4 text-lg font-semibold text-slate-900 dark:text-white">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-12 sm:py-16 px-4 dark:border-slate-700">
+          <FolderKanban className="h-10 w-10 sm:h-12 sm:w-12 text-slate-400" />
+          <h3 className="mt-4 text-base sm:text-lg font-semibold text-slate-900 dark:text-white text-center">
             No projects yet
           </h3>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-500 text-center">
             Get started by creating your first project.
           </p>
           <Button
@@ -239,7 +240,7 @@ export default function ProjectsPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}

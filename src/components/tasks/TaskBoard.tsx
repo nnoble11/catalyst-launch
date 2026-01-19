@@ -195,23 +195,26 @@ export function TaskBoard({ projectId: initialProjectId, projects = [] }: TaskBo
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[calc(100vh-12rem)]">
-        {TASK_STATUSES.map((status) => (
-          <div key={status} className="animate-pulse">
-            <div className="h-full bg-muted rounded-lg" />
-          </div>
-        ))}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-[320px] sm:min-w-0 h-[calc(100vh-12rem)]">
+          {TASK_STATUSES.map((status) => (
+            <div key={status} className="animate-pulse min-w-[280px] sm:min-w-0">
+              <div className="h-full bg-muted rounded-lg" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      {/* Mobile-optimized header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {projects.length > 0 && (
             <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue placeholder="Filter by project" />
               </SelectTrigger>
               <SelectContent>
@@ -225,38 +228,47 @@ export function TaskBoard({ projectId: initialProjectId, projects = [] }: TaskBo
             </Select>
           )}
 
-          <Button variant="outline" size="sm" onClick={fetchTasks}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+          <Button variant="outline" size="sm" onClick={fetchTasks} className="flex-shrink-0">
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
 
         <Button
           onClick={handleGenerateSuggestions}
           disabled={isGenerating}
-          className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+          className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
         >
           <Sparkles className="h-4 w-4 mr-2" />
           {isGenerating ? 'Generating...' : 'AI Suggestions'}
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[calc(100vh-14rem)]">
-        {TASK_STATUSES.map((status) => (
-          <TaskColumn
-            key={status}
-            status={status}
-            tasks={getTasksByStatus(status)}
-            onAddTask={handleAddTask}
-            onUpdateTask={handleUpdateTask}
-            onDeleteTask={handleDeleteTask}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            isDragTarget={dragTargetStatus === status}
-          />
-        ))}
+      {/* Task board with horizontal scroll on mobile */}
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 pb-4">
+        <div className="grid grid-flow-col sm:grid-flow-row grid-rows-1 sm:grid-rows-none sm:grid-cols-2 lg:grid-cols-4 gap-4 min-w-max sm:min-w-0 h-[calc(100vh-16rem)] sm:h-[calc(100vh-14rem)]">
+          {TASK_STATUSES.map((status) => (
+            <div key={status} className="w-[280px] sm:w-auto">
+              <TaskColumn
+                status={status}
+                tasks={getTasksByStatus(status)}
+                onAddTask={handleAddTask}
+                onUpdateTask={handleUpdateTask}
+                onDeleteTask={handleDeleteTask}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                isDragTarget={dragTargetStatus === status}
+              />
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Mobile scroll hint */}
+      <p className="text-xs text-muted-foreground text-center sm:hidden">
+        Swipe left/right to see all columns
+      </p>
     </div>
   );
 }
