@@ -80,6 +80,13 @@ export const integrationProviderEnum = pgEnum('integration_provider', [
   'perplexity',
   // Browser Extension
   'browser_extension',
+  // Revenue & Metrics
+  'stripe',
+  'google_sheets',
+  // Analytics
+  'mixpanel',
+  'posthog',
+  'amplitude',
 ]);
 
 // Sync status enum for tracking sync progress

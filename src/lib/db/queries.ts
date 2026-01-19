@@ -566,6 +566,20 @@ export async function deleteCapture(captureId: string) {
   await db.delete(captures).where(eq(captures.id, captureId));
 }
 
+export async function getRecentCaptures(projectId: string, daysBack: number = 7) {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysBack);
+
+  return db.query.captures.findMany({
+    where: and(
+      eq(captures.projectId, projectId),
+      gte(captures.createdAt, cutoffDate)
+    ),
+    orderBy: [desc(captures.createdAt)],
+    limit: 100,
+  });
+}
+
 // Streak queries
 export async function getStreaksByUserId(userId: string) {
   return db.query.streaks.findMany({

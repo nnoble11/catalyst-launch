@@ -54,6 +54,8 @@ import './raindrop/client';
 import './discord/client';
 import './zoom/client';
 import './browser-extension/client';
+import './stripe/client';
+import './google-sheets/client';
 
 // Log registered integrations in development
 if (process.env.NODE_ENV === 'development') {

@@ -535,6 +535,49 @@ export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
     isAvailable: false,
     isComingSoon: true,
   },
+
+  // ============================================
+  // Revenue & Metrics
+  // ============================================
+  {
+    id: 'stripe',
+    name: 'Stripe',
+    description: 'Automatically track revenue, MRR, and customer milestones from Stripe.',
+    icon: 'credit-card',
+    category: 'productivity',
+    authMethod: 'oauth2',
+    scopes: ['read_only'],
+    syncMethod: 'webhook',
+    supportedTypes: ['note'],
+    defaultSyncInterval: 60,
+    features: {
+      realtime: true,
+      bidirectional: false,
+      incrementalSync: true,
+      webhooks: true,
+    },
+    isAvailable: true,
+  },
+  {
+    id: 'google_sheets',
+    name: 'Google Sheets',
+    description: 'Import metrics and traction data from Google Sheets.',
+    icon: 'table',
+    category: 'productivity',
+    authMethod: 'oauth2',
+    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    syncMethod: 'pull',
+    supportedTypes: ['note'],
+    defaultSyncInterval: 60,
+    features: {
+      realtime: false,
+      bidirectional: false,
+      incrementalSync: true,
+      webhooks: false,
+    },
+    isAvailable: false,
+    isComingSoon: true,
+  },
 ];
 
 /**

@@ -39,6 +39,13 @@ export const INTEGRATION_PROVIDERS = [
   'perplexity',
   // Browser Extension
   'browser_extension',
+  // Revenue & Metrics
+  'stripe',
+  'google_sheets',
+  // Analytics
+  'mixpanel',
+  'posthog',
+  'amplitude',
 ] as const;
 
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];

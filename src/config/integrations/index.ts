@@ -168,6 +168,26 @@ export const OAUTH_CONFIGS: Partial<Record<IntegrationProvider, IntegrationOAuth
     authorizationUrl: 'https://slack.com/oauth/v2/authorize',
     tokenUrl: 'https://slack.com/api/oauth.v2.access',
   },
+
+  // Stripe Connect
+  stripe: {
+    clientId: process.env.STRIPE_CLIENT_ID || '',
+    clientSecret: process.env.STRIPE_SECRET_KEY || '',
+    redirectUri: `${APP_URL}/api/integrations/stripe/callback`,
+    scopes: ['read_only'],
+    authorizationUrl: 'https://connect.stripe.com/oauth/authorize',
+    tokenUrl: 'https://connect.stripe.com/oauth/token',
+  },
+
+  // Google Sheets (reuses Google OAuth)
+  google_sheets: {
+    clientId: process.env.GOOGLE_CLIENT_ID || '',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    redirectUri: `${APP_URL}/api/integrations/google-sheets/callback`,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: 'https://oauth2.googleapis.com/token',
+  },
 };
 
 /**
@@ -228,6 +248,17 @@ export const API_CONFIGS: Partial<Record<IntegrationProvider, IntegrationApiConf
     baseUrl: `${APP_URL}/api/integrations/browser-extension`,
     apiKey: process.env.BROWSER_EXTENSION_SECRET,
   },
+
+  // Stripe
+  stripe: {
+    baseUrl: 'https://api.stripe.com',
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
+
+  // Google Sheets
+  google_sheets: {
+    baseUrl: 'https://sheets.googleapis.com/v4',
+  },
 };
 
 /**
@@ -238,6 +269,7 @@ export const WEBHOOK_SECRETS: Partial<Record<IntegrationProvider, string>> = {
   zoom: process.env.ZOOM_WEBHOOK_SECRET || '',
   discord: process.env.DISCORD_WEBHOOK_SECRET || '',
   slack: process.env.SLACK_SIGNING_SECRET || '',
+  stripe: process.env.STRIPE_WEBHOOK_SECRET || '',
 };
 
 /**
