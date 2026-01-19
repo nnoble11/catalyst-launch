@@ -137,13 +137,13 @@ export default function Home() {
                   <Rocket className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
               </Link>
-              <Link href="/leaderboard" className="w-full sm:w-auto">
+              <Link href="/progress" className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   variant="outline"
                   className="w-full sm:w-auto h-11 sm:h-12 px-6 sm:px-8 text-sm sm:text-base"
                 >
-                  View Leaderboard
+                  View Progress Feed
                 </Button>
               </Link>
             </div>
@@ -228,8 +228,8 @@ export default function Home() {
                 Proactive Coaching
               </h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Get notified when you&apos;re stuck, receive daily check-ins, and
-                build momentum with streaks and achievements.
+                Get notified when you&apos;re stuck, receive daily briefings, and
+                track meaningful milestones like first customer and revenue.
               </p>
             </div>
 

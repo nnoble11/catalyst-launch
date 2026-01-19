@@ -20,6 +20,11 @@ import {
   integrationSyncState,
   ingestedItems,
   webhookSubscriptions,
+  progressMilestones,
+  tractionMetrics,
+  dailyBriefings,
+  decisions,
+  decisionTriggers,
 } from './schema';
 import type { IntegrationProvider, SyncStatus, IngestItemType } from '@/types/integrations';
 import type { Stage, DocumentType, TaskStatus, TaskPriority, CaptureType, StreakType } from '@/config/constants';
@@ -1250,4 +1255,239 @@ export async function getIntegrationStats(userId: string, provider?: Integration
     .groupBy(ingestedItems.provider);
 
   return result;
+}
+
+// ===========================================
+// Progress Milestones queries
+// ===========================================
+
+export async function getProgressMilestonesByProject(projectId: string) {
+  return db.query.progressMilestones.findMany({
+    where: eq(progressMilestones.projectId, projectId),
+    orderBy: [desc(progressMilestones.achievedAt)],
+  });
+}
+
+export async function createProgressMilestone(data: {
+  projectId: string;
+  milestoneType: typeof progressMilestones.$inferSelect['milestoneType'];
+  customTitle?: string;
+  evidence?: typeof progressMilestones.$inferSelect['evidence'];
+  visibility?: string;
+}) {
+  const [milestone] = await db.insert(progressMilestones).values(data).returning();
+  return milestone;
+}
+
+export async function updateProgressMilestone(
+  milestoneId: string,
+  data: Partial<{
+    celebrated: boolean;
+    visibility: string;
+  }>
+) {
+  const [milestone] = await db
+    .update(progressMilestones)
+    .set(data)
+    .where(eq(progressMilestones.id, milestoneId))
+    .returning();
+  return milestone;
+}
+
+export async function getProgressFeed(limit = 50) {
+  // Get public/cohort visible milestones with project and user info
+  const result = await db
+    .select({
+      id: progressMilestones.id,
+      projectId: progressMilestones.projectId,
+      milestoneType: progressMilestones.milestoneType,
+      customTitle: progressMilestones.customTitle,
+      achievedAt: progressMilestones.achievedAt,
+      evidence: progressMilestones.evidence,
+      celebrated: progressMilestones.celebrated,
+      visibility: progressMilestones.visibility,
+      createdAt: progressMilestones.createdAt,
+      projectName: projects.name,
+      userId: users.id,
+      userName: users.name,
+      userAvatarUrl: users.avatarUrl,
+    })
+    .from(progressMilestones)
+    .innerJoin(projects, eq(progressMilestones.projectId, projects.id))
+    .innerJoin(users, eq(projects.userId, users.id))
+    .where(sql`${progressMilestones.visibility} IN ('cohort', 'public')`)
+    .orderBy(desc(progressMilestones.achievedAt))
+    .limit(limit);
+
+  // Transform to expected format
+  return result.map((row) => ({
+    id: row.id,
+    milestone: {
+      id: row.id,
+      projectId: row.projectId,
+      milestoneType: row.milestoneType,
+      customTitle: row.customTitle,
+      achievedAt: row.achievedAt,
+      evidence: row.evidence,
+      celebrated: row.celebrated,
+      visibility: row.visibility,
+      createdAt: row.createdAt,
+    },
+    project: {
+      id: row.projectId,
+      name: row.projectName,
+    },
+    user: {
+      id: row.userId,
+      name: row.userName,
+      avatarUrl: row.userAvatarUrl,
+    },
+  }));
+}
+
+// ===========================================
+// Traction Metrics queries
+// ===========================================
+
+export async function getTractionMetrics(projectId: string, limit = 30) {
+  return db.query.tractionMetrics.findMany({
+    where: eq(tractionMetrics.projectId, projectId),
+    orderBy: [desc(tractionMetrics.metricDate)],
+    limit,
+  });
+}
+
+export async function createTractionMetrics(data: {
+  projectId: string;
+  metricDate?: Date;
+  customers?: number;
+  revenueCents?: number;
+  mrrCents?: number;
+  activeUsers?: number;
+  conversationsCount?: number;
+  npsScore?: number;
+  customMetrics?: Record<string, number | string>;
+}) {
+  const [metrics] = await db
+    .insert(tractionMetrics)
+    .values({ ...data, metricDate: data.metricDate ?? new Date() })
+    .returning();
+  return metrics;
+}
+
+export async function getLatestTractionMetrics(projectId: string) {
+  return db.query.tractionMetrics.findFirst({
+    where: eq(tractionMetrics.projectId, projectId),
+    orderBy: [desc(tractionMetrics.metricDate)],
+  });
+}
+
+// ===========================================
+// Daily Briefings queries
+// ===========================================
+
+export async function getDailyBriefings(userId: string, projectId?: string, limit = 7) {
+  const conditions = [eq(dailyBriefings.userId, userId)];
+  if (projectId) {
+    conditions.push(eq(dailyBriefings.projectId, projectId));
+  }
+
+  return db.query.dailyBriefings.findMany({
+    where: and(...conditions),
+    orderBy: [desc(dailyBriefings.briefingDate)],
+    limit,
+  });
+}
+
+export async function createDailyBriefing(data: {
+  projectId: string;
+  userId: string;
+  briefingDate: Date;
+  content: typeof dailyBriefings.$inferSelect['content'];
+  audioUrl?: string;
+}) {
+  const [briefing] = await db.insert(dailyBriefings).values(data).returning();
+  return briefing;
+}
+
+export async function markBriefingAsRead(briefingId: string) {
+  const [briefing] = await db
+    .update(dailyBriefings)
+    .set({ readAt: new Date() })
+    .where(eq(dailyBriefings.id, briefingId))
+    .returning();
+  return briefing;
+}
+
+export async function getLatestBriefing(userId: string, projectId: string) {
+  return db.query.dailyBriefings.findFirst({
+    where: and(
+      eq(dailyBriefings.userId, userId),
+      eq(dailyBriefings.projectId, projectId)
+    ),
+    orderBy: [desc(dailyBriefings.briefingDate)],
+  });
+}
+
+// ===========================================
+// Decisions queries
+// ===========================================
+
+export async function getDecisionsByProject(projectId: string, status?: typeof decisions.$inferSelect['status']) {
+  const conditions = [eq(decisions.projectId, projectId)];
+  if (status) {
+    conditions.push(eq(decisions.status, status));
+  }
+
+  return db.query.decisions.findMany({
+    where: and(...conditions),
+    orderBy: [desc(decisions.urgencyScore), desc(decisions.createdAt)],
+    with: {
+      triggers: true,
+    },
+  });
+}
+
+export async function getPendingDecisions(projectId: string) {
+  return getDecisionsByProject(projectId, 'pending');
+}
+
+export async function createDecision(data: {
+  projectId: string;
+  title: string;
+  context: string;
+  tradeoffs: typeof decisions.$inferSelect['tradeoffs'];
+  recommendedAction?: string;
+  urgencyScore: number;
+  impactScore: number;
+  category: typeof decisions.$inferSelect['category'];
+  dueDate?: Date;
+}) {
+  const [decision] = await db.insert(decisions).values(data).returning();
+  return decision;
+}
+
+export async function updateDecision(
+  decisionId: string,
+  data: Partial<{
+    status: typeof decisions.$inferSelect['status'];
+    decisionMade: string;
+    decidedAt: Date;
+  }>
+) {
+  const [decision] = await db
+    .update(decisions)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(decisions.id, decisionId))
+    .returning();
+  return decision;
+}
+
+export async function createDecisionTrigger(data: {
+  decisionId: string;
+  triggerType: typeof decisionTriggers.$inferSelect['triggerType'];
+  triggerData?: Record<string, unknown>;
+}) {
+  const [trigger] = await db.insert(decisionTriggers).values(data).returning();
+  return trigger;
 }

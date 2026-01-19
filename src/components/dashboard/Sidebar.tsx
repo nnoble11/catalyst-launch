@@ -12,10 +12,10 @@ import {
   FileText,
   Settings,
   Plug,
-  Lightbulb,
   CheckSquare,
   BarChart3,
   X,
+  Trophy,
 } from 'lucide-react';
 
 const navigation = [
@@ -26,7 +26,7 @@ const navigation = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Integrations', href: '/integrations', icon: Plug },
-  { name: 'Leaderboard', href: '/leaderboard', icon: Lightbulb },
+  { name: 'Progress Feed', href: '/progress', icon: Trophy },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

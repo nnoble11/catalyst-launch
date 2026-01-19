@@ -121,6 +121,56 @@ export const taskPriorityEnum = pgEnum('task_priority', ['low', 'medium', 'high'
 export const captureTypeEnum = pgEnum('capture_type', ['idea', 'note', 'task', 'question', 'resource']);
 export const streakTypeEnum = pgEnum('streak_type', ['daily_activity', 'milestone_completion', 'document_generation']);
 
+// Progress milestone types - meaningful achievements that matter
+export const progressMilestoneTypeEnum = pgEnum('progress_milestone_type', [
+  'first_customer',
+  'ten_customers',
+  'hundred_customers',
+  'first_revenue',
+  'mrr_1k',
+  'mrr_10k',
+  'mrr_100k',
+  'first_investor_meeting',
+  'term_sheet',
+  'funding_closed',
+  'mvp_launched',
+  'product_hunt_launch',
+  'first_employee',
+  'yc_interview',
+  'demo_day',
+  'first_partnership',
+  'custom',
+]);
+
+// Decision categories
+export const decisionCategoryEnum = pgEnum('decision_category', [
+  'product',
+  'growth',
+  'fundraising',
+  'team',
+  'operations',
+  'legal',
+  'finance',
+]);
+
+// Decision status
+export const decisionStatusEnum = pgEnum('decision_status', [
+  'pending',
+  'decided',
+  'deferred',
+  'dismissed',
+]);
+
+// Decision trigger types
+export const decisionTriggerTypeEnum = pgEnum('decision_trigger_type', [
+  'stage_transition',
+  'milestone_missed',
+  'metric_threshold',
+  'time_based',
+  'blocker_detected',
+  'external_event',
+]);
+
 // Users table
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -429,7 +479,7 @@ export const captures = pgTable('captures', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-// Streaks table (Progress Streaks & Gamification)
+// Streaks table (Progress Streaks & Gamification) - DEPRECATED: Being replaced by progress milestones
 export const streaks = pgTable('streaks', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id')
@@ -447,6 +497,117 @@ export const streaks = pgTable('streaks', {
   }[]>().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Progress Milestones table - Meaningful achievements that matter (replaces gamification)
+export const progressMilestones = pgTable('progress_milestones', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  milestoneType: progressMilestoneTypeEnum('milestone_type').notNull(),
+  customTitle: varchar('custom_title', { length: 255 }), // For 'custom' type
+  achievedAt: timestamp('achieved_at', { withTimezone: true }).defaultNow().notNull(),
+  evidence: jsonb('evidence').$type<{
+    metric?: string;
+    value?: number | string;
+    notes?: string;
+    sourceUrl?: string;
+  }>(),
+  celebrated: boolean('celebrated').default(false).notNull(),
+  visibility: varchar('visibility', { length: 20 }).default('cohort').notNull(), // 'private', 'cohort', 'public'
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Traction Metrics table - Track key business metrics over time
+export const tractionMetrics = pgTable('traction_metrics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  metricDate: timestamp('metric_date', { withTimezone: true }).notNull(),
+  customers: integer('customers'),
+  revenueCents: integer('revenue_cents'), // Store in cents to avoid floating point issues
+  mrrCents: integer('mrr_cents'),
+  activeUsers: integer('active_users'),
+  conversationsCount: integer('conversations_count'), // Customer conversations
+  npsScore: integer('nps_score'),
+  customMetrics: jsonb('custom_metrics').$type<Record<string, number | string>>(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Daily Briefings table
+export const dailyBriefings = pgTable('daily_briefings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  briefingDate: timestamp('briefing_date', { withTimezone: true }).notNull(),
+  content: jsonb('content').$type<{
+    summary: string;
+    progress: {
+      completedTasks: number;
+      milestonesHit: string[];
+    };
+    blockers: Array<{
+      description: string;
+      suggestedAction: string;
+    }>;
+    upcoming: Array<{
+      item: string;
+      due: string;
+      daysUntil: number;
+    }>;
+    insight: {
+      observation: string;
+      recommendation: string;
+    };
+    momentumScore: number;
+    focusSuggestion: string;
+  }>().notNull(),
+  audioUrl: text('audio_url'),
+  readAt: timestamp('read_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Decisions table - Weekly decision queue
+export const decisions = pgTable('decisions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  projectId: uuid('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  context: text('context').notNull(), // AI-generated context explaining why this matters now
+  tradeoffs: jsonb('tradeoffs').$type<Array<{
+    option: string;
+    pros: string[];
+    cons: string[];
+    recommended: boolean;
+  }>>().notNull(),
+  recommendedAction: text('recommended_action'),
+  urgencyScore: integer('urgency_score').notNull(), // 1-10
+  impactScore: integer('impact_score').notNull(), // 1-10
+  category: decisionCategoryEnum('category').notNull(),
+  status: decisionStatusEnum('status').default('pending').notNull(),
+  decisionMade: text('decision_made'), // What the founder actually decided
+  decidedAt: timestamp('decided_at', { withTimezone: true }),
+  dueDate: timestamp('due_date', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Decision Triggers table - What prompted a decision to surface
+export const decisionTriggers = pgTable('decision_triggers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  decisionId: uuid('decision_id')
+    .notNull()
+    .references(() => decisions.id, { onDelete: 'cascade' }),
+  triggerType: decisionTriggerTypeEnum('trigger_type').notNull(),
+  triggerData: jsonb('trigger_data').$type<Record<string, unknown>>(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 // AI Memory table (Persistent AI Memory)
@@ -533,6 +694,10 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   captures: many(captures),
   aiMemories: many(aiMemory),
   analyticsEvents: many(analyticsEvents),
+  progressMilestones: many(progressMilestones),
+  tractionMetrics: many(tractionMetrics),
+  dailyBriefings: many(dailyBriefings),
+  decisions: many(decisions),
 }));
 
 export const milestonesRelations = relations(milestones, ({ one }) => ({
@@ -701,5 +866,50 @@ export const documentVersionsRelations = relations(documentVersions, ({ one }) =
   document: one(documents, {
     fields: [documentVersions.documentId],
     references: [documents.id],
+  }),
+}));
+
+// Progress Milestones relations
+export const progressMilestonesRelations = relations(progressMilestones, ({ one }) => ({
+  project: one(projects, {
+    fields: [progressMilestones.projectId],
+    references: [projects.id],
+  }),
+}));
+
+// Traction Metrics relations
+export const tractionMetricsRelations = relations(tractionMetrics, ({ one }) => ({
+  project: one(projects, {
+    fields: [tractionMetrics.projectId],
+    references: [projects.id],
+  }),
+}));
+
+// Daily Briefings relations
+export const dailyBriefingsRelations = relations(dailyBriefings, ({ one }) => ({
+  project: one(projects, {
+    fields: [dailyBriefings.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [dailyBriefings.userId],
+    references: [users.id],
+  }),
+}));
+
+// Decisions relations
+export const decisionsRelations = relations(decisions, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [decisions.projectId],
+    references: [projects.id],
+  }),
+  triggers: many(decisionTriggers),
+}));
+
+// Decision Triggers relations
+export const decisionTriggersRelations = relations(decisionTriggers, ({ one }) => ({
+  decision: one(decisions, {
+    fields: [decisionTriggers.decisionId],
+    references: [decisions.id],
   }),
 }));

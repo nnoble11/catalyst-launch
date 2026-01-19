@@ -371,3 +371,179 @@ export interface BreakthroughSession {
   }[];
   resources: string[];
 }
+
+// Progress Milestone types - Meaningful achievements (replaces gamification)
+export type ProgressMilestoneType =
+  | 'first_customer'
+  | 'ten_customers'
+  | 'hundred_customers'
+  | 'first_revenue'
+  | 'mrr_1k'
+  | 'mrr_10k'
+  | 'mrr_100k'
+  | 'first_investor_meeting'
+  | 'term_sheet'
+  | 'funding_closed'
+  | 'mvp_launched'
+  | 'product_hunt_launch'
+  | 'first_employee'
+  | 'yc_interview'
+  | 'demo_day'
+  | 'first_partnership'
+  | 'custom';
+
+export interface ProgressMilestone {
+  id: string;
+  projectId: string;
+  milestoneType: ProgressMilestoneType;
+  customTitle: string | null;
+  achievedAt: Date;
+  evidence: MilestoneEvidence | null;
+  celebrated: boolean;
+  visibility: 'private' | 'cohort' | 'public';
+  createdAt: Date;
+}
+
+export interface MilestoneEvidence {
+  metric?: string;
+  value?: number | string;
+  notes?: string;
+  sourceUrl?: string;
+}
+
+export interface CreateProgressMilestoneInput {
+  milestoneType: ProgressMilestoneType;
+  customTitle?: string;
+  evidence?: MilestoneEvidence;
+  visibility?: 'private' | 'cohort' | 'public';
+}
+
+// Traction Metrics types
+export interface TractionMetrics {
+  id: string;
+  projectId: string;
+  metricDate: Date;
+  customers: number | null;
+  revenueCents: number | null;
+  mrrCents: number | null;
+  activeUsers: number | null;
+  conversationsCount: number | null;
+  npsScore: number | null;
+  customMetrics: Record<string, number | string> | null;
+  createdAt: Date;
+}
+
+export interface CreateTractionMetricsInput {
+  metricDate?: Date;
+  customers?: number;
+  revenueCents?: number;
+  mrrCents?: number;
+  activeUsers?: number;
+  conversationsCount?: number;
+  npsScore?: number;
+  customMetrics?: Record<string, number | string>;
+}
+
+// Daily Briefing types
+export interface DailyBriefing {
+  id: string;
+  projectId: string;
+  userId: string;
+  briefingDate: Date;
+  content: BriefingContent;
+  audioUrl: string | null;
+  readAt: Date | null;
+  createdAt: Date;
+}
+
+export interface BriefingContent {
+  summary: string;
+  progress: {
+    completedTasks: number;
+    milestonesHit: string[];
+  };
+  blockers: Array<{
+    description: string;
+    suggestedAction: string;
+  }>;
+  upcoming: Array<{
+    item: string;
+    due: string;
+    daysUntil: number;
+  }>;
+  insight: {
+    observation: string;
+    recommendation: string;
+  };
+  momentumScore: number;
+  focusSuggestion: string;
+}
+
+// Decision types
+export type DecisionCategory = 'product' | 'growth' | 'fundraising' | 'team' | 'operations' | 'legal' | 'finance';
+export type DecisionStatus = 'pending' | 'decided' | 'deferred' | 'dismissed';
+export type DecisionTriggerType = 'stage_transition' | 'milestone_missed' | 'metric_threshold' | 'time_based' | 'blocker_detected' | 'external_event';
+
+export interface Decision {
+  id: string;
+  projectId: string;
+  title: string;
+  context: string;
+  tradeoffs: DecisionTradeoff[];
+  recommendedAction: string | null;
+  urgencyScore: number;
+  impactScore: number;
+  category: DecisionCategory;
+  status: DecisionStatus;
+  decisionMade: string | null;
+  decidedAt: Date | null;
+  dueDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DecisionTradeoff {
+  option: string;
+  pros: string[];
+  cons: string[];
+  recommended: boolean;
+}
+
+export interface DecisionTrigger {
+  id: string;
+  decisionId: string;
+  triggerType: DecisionTriggerType;
+  triggerData: Record<string, unknown> | null;
+  createdAt: Date;
+}
+
+export interface CreateDecisionInput {
+  title: string;
+  context: string;
+  tradeoffs: DecisionTradeoff[];
+  recommendedAction?: string;
+  urgencyScore: number;
+  impactScore: number;
+  category: DecisionCategory;
+  dueDate?: Date;
+}
+
+export interface UpdateDecisionInput {
+  status?: DecisionStatus;
+  decisionMade?: string;
+}
+
+// Progress Feed types (for community milestone feed)
+export interface ProgressFeedItem {
+  id: string;
+  milestone: ProgressMilestone;
+  project: {
+    id: string;
+    name: string;
+  };
+  user: {
+    id: string;
+    name: string | null;
+    avatarUrl: string | null;
+  };
+}

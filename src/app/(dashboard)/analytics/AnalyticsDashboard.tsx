@@ -8,9 +8,7 @@ import { ProgressChart } from '@/components/analytics/ProgressChart';
 import { ActivityHeatmap } from '@/components/analytics/ActivityHeatmap';
 import { VelocityGraph } from '@/components/analytics/VelocityGraph';
 import { PredictionCard } from '@/components/analytics/PredictionCard';
-import { StreakDisplay } from '@/components/gamification/StreakDisplay';
-import { AchievementGrid } from '@/components/gamification/AchievementBadge';
-import { RefreshCw, FileText, BarChart3, Trophy } from 'lucide-react';
+import { RefreshCw, FileText, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PredictionsData {
@@ -47,46 +45,21 @@ interface WeeklyReport {
   summary: string;
 }
 
-interface StreaksData {
-  streaks: {
-    id: string;
-    streakType: string;
-    achievements: { badge: string; earnedAt: string; description: string }[];
-  }[];
-  summary: {
-    currentStreak: number;
-    longestStreak: number;
-    totalPoints: number;
-    totalAchievements: number;
-  };
-}
-
 export function AnalyticsDashboard() {
   const [predictions, setPredictions] = useState<PredictionsData | null>(null);
   const [weeklyReport, setWeeklyReport] = useState<WeeklyReport | null>(null);
-  const [streaksData, setStreaksData] = useState<StreaksData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [predictionsRes, streaksRes] = await Promise.all([
-        fetch('/api/analytics?view=predictions'),
-        fetch('/api/streaks'),
-      ]);
+      const predictionsRes = await fetch('/api/analytics?view=predictions');
 
       if (predictionsRes.ok) {
         const data = await predictionsRes.json();
         if (data.success) {
           setPredictions(data.data);
-        }
-      }
-
-      if (streaksRes.ok) {
-        const data = await streaksRes.json();
-        if (data.success) {
-          setStreaksData(data.data);
         }
       }
     } catch (error) {
@@ -135,9 +108,6 @@ export function AnalyticsDashboard() {
     );
   }
 
-  const allAchievements =
-    streaksData?.streaks.flatMap((s) => s.achievements) || [];
-
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
@@ -156,11 +126,6 @@ export function AnalyticsDashboard() {
                   <span className="hidden xs:inline">Weekly Report</span>
                   <span className="xs:hidden">Report</span>
                 </TabsTrigger>
-                <TabsTrigger value="achievements" className="gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                  <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                  <span className="hidden xs:inline">Achievements</span>
-                  <span className="xs:hidden">Awards</span>
-                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -172,9 +137,7 @@ export function AnalyticsDashboard() {
 
           <TabsContent value="overview" className="space-y-4 sm:space-y-6">
             {/* Key Metrics Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <StreakDisplay />
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {predictions && (
                 <VelocityGraph data={predictions.milestoneVelocity} />
               )}
@@ -191,15 +154,15 @@ export function AnalyticsDashboard() {
                     </span>
                   </div>
                   <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Total Achievements</span>
+                    <span className="text-muted-foreground">Milestones This Month</span>
                     <span className="font-semibold">
-                      {streaksData?.summary.totalAchievements || 0}
+                      {predictions?.milestoneVelocity.completedThisMonth || 0}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm sm:text-base">
-                    <span className="text-muted-foreground">Total Points</span>
+                    <span className="text-muted-foreground">Avg. Days to Complete</span>
                     <span className="font-semibold">
-                      {streaksData?.summary.totalPoints || 0}
+                      {predictions?.milestoneVelocity.averageDaysToComplete || '-'}
                     </span>
                   </div>
                 </CardContent>
@@ -289,17 +252,6 @@ export function AnalyticsDashboard() {
                 </CardContent>
               </Card>
             )}
-          </TabsContent>
-
-          <TabsContent value="achievements">
-            <Card>
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">Your Achievements</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-                <AchievementGrid achievements={allAchievements} />
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
