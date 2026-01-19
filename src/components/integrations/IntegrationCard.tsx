@@ -133,7 +133,7 @@ export function IntegrationCard({
     <Card className={!isAvailable ? 'opacity-60' : ''}>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
             {icon}
           </div>
           <div>
@@ -169,7 +169,7 @@ export function IntegrationCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge variant="outline" className="text-xs">
-                      <Zap className="mr-1 h-3 w-3 text-yellow-500" />
+                      <Zap className="mr-1 h-3 w-3 text-warning" />
                       Real-time
                     </Badge>
                   </TooltipTrigger>
@@ -182,7 +182,7 @@ export function IntegrationCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge variant="outline" className="text-xs">
-                      <ArrowLeftRight className="mr-1 h-3 w-3 text-blue-500" />
+                      <ArrowLeftRight className="mr-1 h-3 w-3 text-secondary" />
                       Two-way
                     </Badge>
                   </TooltipTrigger>
@@ -195,7 +195,7 @@ export function IntegrationCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge variant="outline" className="text-xs">
-                      <Webhook className="mr-1 h-3 w-3 text-purple-500" />
+                      <Webhook className="mr-1 h-3 w-3 text-stage-ideation" />
                       Webhooks
                     </Badge>
                   </TooltipTrigger>
@@ -210,7 +210,7 @@ export function IntegrationCard({
 
         {/* Sync status for connected integrations */}
         {isConnected && syncStatus?.lastSyncAt && (
-          <div className="flex items-center gap-2 text-xs text-slate-500">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
             <span>Last sync: {formatLastSync(syncStatus.lastSyncAt)}</span>
           </div>
@@ -218,7 +218,7 @@ export function IntegrationCard({
 
         {/* Error message */}
         {syncStatus?.error && (
-          <div className="text-xs text-red-500">
+          <div className="text-xs text-destructive">
             Sync error: {syncStatus.error}
           </div>
         )}

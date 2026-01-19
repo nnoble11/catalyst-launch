@@ -237,7 +237,8 @@ export function TaskBoard({ projectId: initialProjectId, projects = [] }: TaskBo
         <Button
           onClick={handleGenerateSuggestions}
           disabled={isGenerating}
-          className="w-full sm:w-auto bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
+          variant="secondary"
+          className="w-full sm:w-auto"
         >
           <Sparkles className="h-4 w-4 mr-2" />
           {isGenerating ? 'Generating...' : 'AI Suggestions'}

@@ -37,15 +37,16 @@ const badgeIcons: Record<string, typeof Trophy> = {
   power_user: Medal,
 };
 
+// Use design system semantic colors
 const badgeColors: Record<string, string> = {
-  first_project: 'bg-blue-100 text-blue-800 border-blue-300',
-  first_milestone: 'bg-green-100 text-green-800 border-green-300',
-  first_document: 'bg-purple-100 text-purple-800 border-purple-300',
-  streak_7: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  streak_30: 'bg-orange-100 text-orange-800 border-orange-300',
-  streak_100: 'bg-red-100 text-red-800 border-red-300',
-  all_milestones: 'bg-amber-100 text-amber-800 border-amber-300',
-  power_user: 'bg-indigo-100 text-indigo-800 border-indigo-300',
+  first_project: 'bg-secondary/10 text-secondary border-secondary/30',
+  first_milestone: 'bg-success/10 text-success border-success/30',
+  first_document: 'bg-stage-ideation-bg text-stage-ideation border-stage-ideation/30',
+  streak_7: 'bg-warning/10 text-warning border-warning/30',
+  streak_30: 'bg-primary/10 text-primary border-primary/30',
+  streak_100: 'bg-destructive/10 text-destructive border-destructive/30',
+  all_milestones: 'bg-warning/15 text-warning border-warning/30',
+  power_user: 'bg-stage-ideation-bg text-stage-ideation border-stage-ideation/30',
 };
 
 const sizeClasses = {
@@ -144,7 +145,7 @@ export function AchievementGrid({ achievements }: AchievementGridProps) {
                   <p className="font-semibold">{badgeInfo.name}</p>
                   <p className="text-xs text-muted-foreground">{badgeInfo.description}</p>
                   {isEarned && achievement && (
-                    <p className="text-xs text-green-600 mt-1">
+                    <p className="text-xs text-success mt-1">
                       Earned: {new Date(achievement.earnedAt).toLocaleDateString()}
                     </p>
                   )}
