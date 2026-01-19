@@ -42,10 +42,11 @@ interface ProjectCardProps {
   onDelete?: (id: string) => void;
 }
 
-const stageBadgeColors: Record<Stage, string> = {
-  ideation: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-  mvp: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  gtm: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+// Use badge variants for stage colors (defined in design system)
+const stageBadgeVariants: Record<Stage, 'stage-ideation' | 'stage-mvp' | 'stage-gtm'> = {
+  ideation: 'stage-ideation',
+  mvp: 'stage-mvp',
+  gtm: 'stage-gtm',
 };
 
 export function ProjectCard({ project, onDelete }: ProjectCardProps) {
@@ -111,7 +112,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
         )}
 
         <div className="flex items-center justify-between gap-2">
-          <Badge className={stageBadgeColors[project.stage]} variant="secondary">
+          <Badge variant={stageBadgeVariants[project.stage]}>
             {STAGE_LABELS[project.stage]}
           </Badge>
 
@@ -139,7 +140,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
                   className="flex items-center gap-2 text-sm"
                 >
                   {milestone.isCompleted ? (
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                   ) : (
                     <Circle className="h-4 w-4 shrink-0 text-muted-foreground/50" />
                   )}

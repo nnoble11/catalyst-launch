@@ -18,10 +18,11 @@ interface ProgressChartProps {
   projects: ProjectProgress[];
 }
 
-const riskColors = {
-  low: 'bg-green-100 text-green-800 border-green-300',
-  medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  high: 'bg-red-100 text-red-800 border-red-300',
+// Use design system risk colors
+const riskStyles = {
+  low: 'bg-risk-low-bg text-risk-low border-risk-low/30',
+  medium: 'bg-risk-medium-bg text-risk-medium border-risk-medium/30',
+  high: 'bg-risk-high-bg text-risk-high border-risk-high/30',
 };
 
 const riskIcons = {
@@ -59,7 +60,7 @@ export function ProgressChart({ projects }: ProgressChartProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{project.projectName}</span>
-                  <Badge className={`text-xs ${riskColors[project.riskLevel]}`}>
+                  <Badge className={`text-xs ${riskStyles[project.riskLevel]}`}>
                     <RiskIcon className="h-3 w-3 mr-1" />
                     {project.riskLevel} risk
                   </Badge>

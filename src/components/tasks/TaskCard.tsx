@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Trash2, Edit2, Sparkles, Calendar, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { TASK_PRIORITY_LABELS } from '@/config/constants';
+import { TASK_PRIORITY_LABELS, type TaskPriority } from '@/config/constants';
 import type { Task } from '@/types';
 
 interface TaskCardProps {
@@ -22,11 +22,12 @@ interface TaskCardProps {
   isDragging?: boolean;
 }
 
-const priorityColors = {
-  low: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  medium: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  high: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-  urgent: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+// Use badge variants for priority colors (defined in design system)
+const priorityBadgeVariants: Record<TaskPriority, 'priority-low' | 'priority-medium' | 'priority-high' | 'priority-urgent'> = {
+  low: 'priority-low',
+  medium: 'priority-medium',
+  high: 'priority-high',
+  urgent: 'priority-urgent',
 };
 
 export function TaskCard({ task, onUpdate, onDelete, onEdit, isDragging }: TaskCardProps) {
@@ -72,7 +73,7 @@ export function TaskCard({ task, onUpdate, onDelete, onEdit, isDragging }: TaskC
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2 mb-1">
               {task.aiSuggested && (
-                <Sparkles className="h-3.5 w-3.5 text-purple-500 flex-shrink-0 mt-0.5" />
+                <Sparkles className="h-3.5 w-3.5 text-stage-ideation flex-shrink-0 mt-0.5" />
               )}
               <p
                 className={`text-sm font-medium ${
@@ -104,14 +105,14 @@ export function TaskCard({ task, onUpdate, onDelete, onEdit, isDragging }: TaskC
             )}
 
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge className={`text-xs ${priorityColors[task.priority]}`}>
+              <Badge variant={priorityBadgeVariants[task.priority]} className="text-xs">
                 {TASK_PRIORITY_LABELS[task.priority]}
               </Badge>
 
               {task.dueDate && (
                 <Badge
                   variant="outline"
-                  className={`text-xs ${isOverdue ? 'border-red-500 text-red-500' : ''}`}
+                  className={`text-xs ${isOverdue ? 'border-destructive text-destructive' : ''}`}
                 >
                   <Calendar className="h-3 w-3 mr-1" />
                   {formatDate(task.dueDate)}
@@ -120,7 +121,7 @@ export function TaskCard({ task, onUpdate, onDelete, onEdit, isDragging }: TaskC
             </div>
 
             {task.aiRationale && (
-              <p className="text-xs text-purple-600 dark:text-purple-400 mt-2 italic">
+              <p className="text-xs text-stage-ideation mt-2 italic">
                 AI: {task.aiRationale}
               </p>
             )}
@@ -135,7 +136,7 @@ export function TaskCard({ task, onUpdate, onDelete, onEdit, isDragging }: TaskC
                 onClick={handleComplete}
                 disabled={isLoading}
               >
-                <CheckCircle className="h-4 w-4 text-green-600" />
+                <CheckCircle className="h-4 w-4 text-success" />
               </Button>
             )}
 

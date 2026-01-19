@@ -34,11 +34,11 @@ export function QuickCapture({ projectId, onCapture }: QuickCaptureProps) {
     <>
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 z-50"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:scale-105 transition-all z-50"
         size="icon"
+        aria-label="Quick capture (⌘K)"
       >
         <Plus className="h-6 w-6" />
-        <span className="sr-only">Quick capture (⌘K)</span>
       </Button>
 
       <CaptureModal

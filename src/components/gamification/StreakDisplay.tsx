@@ -63,11 +63,12 @@ export function StreakDisplay({ compact = false }: StreakDisplayProps) {
     100
   );
 
+  // Use design system colors for streak levels
   const getStreakColor = (streak: number) => {
-    if (streak >= 100) return 'text-purple-500';
-    if (streak >= 30) return 'text-orange-500';
-    if (streak >= 7) return 'text-yellow-500';
-    return 'text-slate-500';
+    if (streak >= 100) return 'text-stage-ideation';  // Purple for legendary
+    if (streak >= 30) return 'text-primary';          // Orange for epic
+    if (streak >= 7) return 'text-warning';           // Amber for good
+    return 'text-muted-foreground';                   // Default
   };
 
   const getStreakEmoji = (streak: number) => {
@@ -117,7 +118,7 @@ export function StreakDisplay({ compact = false }: StreakDisplayProps) {
 
         <div className="grid grid-cols-3 gap-4 pt-2">
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-amber-500">
+            <div className="flex items-center justify-center gap-1 text-warning">
               <Trophy className="h-4 w-4" />
               <span className="font-semibold">{streakData.longestStreak}</span>
             </div>
@@ -125,7 +126,7 @@ export function StreakDisplay({ compact = false }: StreakDisplayProps) {
           </div>
 
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-blue-500">
+            <div className="flex items-center justify-center gap-1 text-secondary">
               <Zap className="h-4 w-4" />
               <span className="font-semibold">{streakData.totalPoints}</span>
             </div>
@@ -133,7 +134,7 @@ export function StreakDisplay({ compact = false }: StreakDisplayProps) {
           </div>
 
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-green-500">
+            <div className="flex items-center justify-center gap-1 text-success">
               <Target className="h-4 w-4" />
               <span className="font-semibold">{streakData.totalAchievements}</span>
             </div>

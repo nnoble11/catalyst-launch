@@ -19,12 +19,13 @@ interface ActivityHeatmapProps {
   days?: number;
 }
 
+// Use design system success color with varying opacity for intensity
 function getIntensityClass(count: number): string {
   if (count === 0) return 'bg-muted';
-  if (count <= 2) return 'bg-green-200 dark:bg-green-900';
-  if (count <= 5) return 'bg-green-400 dark:bg-green-700';
-  if (count <= 10) return 'bg-green-500 dark:bg-green-600';
-  return 'bg-green-600 dark:bg-green-500';
+  if (count <= 2) return 'bg-success/20';
+  if (count <= 5) return 'bg-success/40';
+  if (count <= 10) return 'bg-success/60';
+  return 'bg-success/80';
 }
 
 function generateDateRange(days: number): string[] {
@@ -185,10 +186,10 @@ export function ActivityHeatmap({ data, days = 90 }: ActivityHeatmapProps) {
           <span>Less</span>
           <div className="flex gap-1">
             <div className="w-3 h-3 rounded-sm bg-muted" />
-            <div className="w-3 h-3 rounded-sm bg-green-200 dark:bg-green-900" />
-            <div className="w-3 h-3 rounded-sm bg-green-400 dark:bg-green-700" />
-            <div className="w-3 h-3 rounded-sm bg-green-500 dark:bg-green-600" />
-            <div className="w-3 h-3 rounded-sm bg-green-600 dark:bg-green-500" />
+            <div className="w-3 h-3 rounded-sm bg-success/20" />
+            <div className="w-3 h-3 rounded-sm bg-success/40" />
+            <div className="w-3 h-3 rounded-sm bg-success/60" />
+            <div className="w-3 h-3 rounded-sm bg-success/80" />
           </div>
           <span>More</span>
         </div>

@@ -38,12 +38,13 @@ const captureTypeIcons = {
   resource: Link,
 };
 
-const captureTypeColors = {
-  idea: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  note: 'bg-blue-100 text-blue-800 border-blue-300',
-  task: 'bg-green-100 text-green-800 border-green-300',
-  question: 'bg-purple-100 text-purple-800 border-purple-300',
-  resource: 'bg-orange-100 text-orange-800 border-orange-300',
+// Use design system semantic colors
+const captureTypeStyles = {
+  idea: 'bg-stage-ideation-bg text-stage-ideation border-stage-ideation/30',
+  note: 'bg-muted text-muted-foreground border-border',
+  task: 'bg-priority-high-bg text-priority-high border-priority-high/30',
+  question: 'bg-priority-medium-bg text-priority-medium border-priority-medium/30',
+  resource: 'bg-success-muted text-success border-success/30',
 };
 
 export function CaptureModal({ isOpen, onClose, projectId, onCapture }: CaptureModalProps) {
@@ -164,7 +165,7 @@ export function CaptureModal({ isOpen, onClose, projectId, onCapture }: CaptureM
           {detectedType && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Detected type:</span>
-              <Badge className={captureTypeColors[detectedType]}>
+              <Badge className={captureTypeStyles[detectedType]}>
                 {(() => {
                   const Icon = captureTypeIcons[detectedType];
                   return <Icon className="h-3 w-3 mr-1" />;
@@ -182,7 +183,7 @@ export function CaptureModal({ isOpen, onClose, projectId, onCapture }: CaptureM
                   key={type}
                   variant="outline"
                   className={`cursor-pointer hover:bg-accent ${
-                    detectedType === type ? captureTypeColors[type] : ''
+                    detectedType === type ? captureTypeStyles[type] : ''
                   }`}
                   onClick={() => setDetectedType(type)}
                 >
