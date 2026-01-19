@@ -230,7 +230,7 @@ function DocumentsPageContent() {
 
         {/* Sidebar */}
         <div className={cn(
-          'fixed inset-y-0 left-0 z-40 w-[85vw] max-w-[320px] bg-background border-r md:static md:w-80 md:z-auto space-y-4 overflow-y-auto transition-transform duration-300 pt-4 md:pt-0 px-4 md:px-0',
+          'fixed inset-y-0 left-0 z-40 w-[85vw] max-w-[320px] bg-background border-r md:static md:w-80 md:z-auto space-y-4 overflow-y-auto transition-transform duration-300 pt-4 md:pt-0 px-4 md:pr-4',
           showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}>
           {/* Mobile close button */}
