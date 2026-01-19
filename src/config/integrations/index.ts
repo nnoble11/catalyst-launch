@@ -179,6 +179,16 @@ export const OAUTH_CONFIGS: Partial<Record<IntegrationProvider, IntegrationOAuth
     tokenUrl: 'https://connect.stripe.com/oauth/token',
   },
 
+  // GitHub
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID || '',
+    clientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+    redirectUri: `${APP_URL}/api/integrations/github/callback`,
+    scopes: ['repo', 'read:user'],
+    authorizationUrl: 'https://github.com/login/oauth/authorize',
+    tokenUrl: 'https://github.com/login/oauth/access_token',
+  },
+
   // Google Sheets (reuses Google OAuth)
   google_sheets: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -259,6 +269,12 @@ export const API_CONFIGS: Partial<Record<IntegrationProvider, IntegrationApiConf
   google_sheets: {
     baseUrl: 'https://sheets.googleapis.com/v4',
   },
+
+  // GitHub
+  github: {
+    baseUrl: 'https://api.github.com',
+    webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
+  },
 };
 
 /**
@@ -270,6 +286,7 @@ export const WEBHOOK_SECRETS: Partial<Record<IntegrationProvider, string>> = {
   discord: process.env.DISCORD_WEBHOOK_SECRET || '',
   slack: process.env.SLACK_SIGNING_SECRET || '',
   stripe: process.env.STRIPE_WEBHOOK_SECRET || '',
+  github: process.env.GITHUB_WEBHOOK_SECRET || '',
 };
 
 /**

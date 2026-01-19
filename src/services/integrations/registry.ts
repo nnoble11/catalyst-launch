@@ -254,6 +254,25 @@ export const INTEGRATION_DEFINITIONS: IntegrationDefinition[] = [
     isAvailable: false,
     isComingSoon: true,
   },
+  {
+    id: 'github',
+    name: 'GitHub',
+    description: 'Monitor repository activity, commits, PRs, and releases.',
+    icon: 'github',
+    category: 'tasks_projects',
+    authMethod: 'oauth2',
+    scopes: ['repo', 'read:user'],
+    syncMethod: 'webhook',
+    supportedTypes: ['issue', 'note', 'comment', 'document'],
+    defaultSyncInterval: 15,
+    features: {
+      realtime: true,
+      bidirectional: false,
+      incrementalSync: true,
+      webhooks: true,
+    },
+    isAvailable: true,
+  },
 
   // ============================================
   // Communication

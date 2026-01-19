@@ -56,6 +56,7 @@ import './zoom/client';
 import './browser-extension/client';
 import './stripe/client';
 import './google-sheets/client';
+import './github/client';
 
 // Log registered integrations in development
 if (process.env.NODE_ENV === 'development') {

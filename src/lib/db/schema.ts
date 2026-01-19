@@ -59,6 +59,7 @@ export const integrationProviderEnum = pgEnum('integration_provider', [
   'ticktick',
   'linear',
   'gmail',
+  'github',
   // Tier 2 - Knowledge
   'obsidian',
   'roam',
