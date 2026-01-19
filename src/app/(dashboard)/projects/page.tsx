@@ -127,9 +127,9 @@ export default function ProjectsPage() {
           <Skeleton className="h-8 w-32" />
           <Skeleton className="h-10 w-32" />
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-64 w-full" />
+            <Skeleton key={i} className="h-64 w-full rounded-xl" />
           ))}
         </div>
       </div>
@@ -139,11 +139,11 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">
             Projects
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             Manage your startup projects and track progress
           </p>
         </div>
@@ -162,7 +162,7 @@ export default function ProjectsPage() {
                 Start a new startup project and track your progress.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4 pt-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Project Name</Label>
                 <Input
@@ -193,7 +193,7 @@ export default function ProjectsPage() {
                     setNewProject({ ...newProject, stage: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a stage" />
                   </SelectTrigger>
                   <SelectContent>
@@ -223,16 +223,16 @@ export default function ProjectsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-12 sm:py-16 px-4 dark:border-slate-700">
-          <FolderKanban className="h-10 w-10 sm:h-12 sm:w-12 text-slate-400" />
-          <h3 className="mt-4 text-base sm:text-lg font-semibold text-slate-900 dark:text-white text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12 sm:py-16 px-4">
+          <FolderKanban className="h-10 w-10 sm:h-12 sm:w-12 text-muted-foreground/50" />
+          <h3 className="mt-4 text-base sm:text-lg font-semibold text-foreground text-center">
             No projects yet
           </h3>
-          <p className="mt-2 text-sm text-slate-500 text-center">
+          <p className="mt-2 text-sm text-muted-foreground text-center">
             Get started by creating your first project.
           </p>
           <Button
-            className="mt-4"
+            className="mt-6"
             onClick={() => setIsCreateDialogOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />

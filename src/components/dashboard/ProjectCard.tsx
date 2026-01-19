@@ -56,15 +56,15 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
 
   return (
     <Card className="group transition-shadow hover:shadow-md">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
+      <CardHeader>
+        <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-              <FolderKanban className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+              <FolderKanban className="h-5 w-5 text-muted-foreground" />
             </div>
-            <div>
+            <div className="min-w-0 space-y-1">
               <Link href={`/projects/${project.id}`}>
-                <CardTitle className="text-lg hover:text-blue-600 dark:hover:text-blue-400">
+                <CardTitle className="text-base hover:text-secondary transition-colors">
                   {project.name}
                 </CardTitle>
               </Link>
@@ -79,7 +79,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
@@ -93,7 +93,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="text-red-600 dark:text-red-400"
+                className="text-destructive"
                 onClick={() => onDelete?.(project.id)}
               >
                 Delete Project
@@ -103,51 +103,51 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-4">
         {project.description && (
-          <p className="mb-4 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
+          <p className="line-clamp-2 text-sm text-muted-foreground">
             {project.description}
           </p>
         )}
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <Badge className={stageBadgeColors[project.stage]} variant="secondary">
             {STAGE_LABELS[project.stage]}
           </Badge>
 
           {!project.isActive && (
-            <Badge variant="outline" className="text-slate-500">
+            <Badge variant="outline" className="text-muted-foreground">
               Archived
             </Badge>
           )}
         </div>
 
         {milestones.length > 0 && (
-          <div className="mt-4 space-y-2">
+          <div className="space-y-3 pt-2 border-t border-border">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-600 dark:text-slate-400">Progress</span>
+              <span className="text-muted-foreground">Progress</span>
               <span className="font-medium">
                 {completedMilestones}/{milestones.length} milestones
               </span>
             </div>
-            <Progress value={progressPercentage} className="h-2" />
+            <Progress value={progressPercentage} className="h-1.5" />
 
-            <div className="mt-3 space-y-1">
+            <div className="space-y-1.5">
               {milestones.slice(0, 3).map((milestone) => (
                 <div
                   key={milestone.id}
                   className="flex items-center gap-2 text-sm"
                 >
                   {milestone.isCompleted ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
                   ) : (
-                    <Circle className="h-4 w-4 text-slate-400" />
+                    <Circle className="h-4 w-4 shrink-0 text-muted-foreground/50" />
                   )}
                   <span
                     className={
                       milestone.isCompleted
-                        ? 'text-slate-500 line-through'
-                        : 'text-slate-700 dark:text-slate-300'
+                        ? 'text-muted-foreground line-through'
+                        : 'text-foreground'
                     }
                   >
                     {milestone.title}
@@ -155,7 +155,7 @@ export function ProjectCard({ project, onDelete }: ProjectCardProps) {
                 </div>
               ))}
               {milestones.length > 3 && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground pt-1">
                   +{milestones.length - 3} more milestones
                 </p>
               )}

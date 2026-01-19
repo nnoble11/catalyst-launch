@@ -68,16 +68,16 @@ export function Sidebar() {
         )}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-6">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-sidebar-border px-5">
           <Link href="/projects" className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
               <span className="text-lg font-bold text-primary-foreground">C</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-base font-semibold text-sidebar-foreground">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-base font-semibold leading-none text-sidebar-foreground">
                 Catalyst
               </span>
-              <span className="text-xs text-muted-foreground">Launch</span>
+              <span className="text-xs leading-none text-muted-foreground">Launch</span>
             </div>
           </Link>
           {/* Mobile close button */}
@@ -107,7 +107,7 @@ export function Sidebar() {
                 )}
               >
                 <item.icon className={cn(
-                  'h-5 w-5 flex-shrink-0',
+                  'h-[18px] w-[18px] shrink-0',
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )} />
                 {item.name}
@@ -117,7 +117,7 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-sidebar-border p-4">
+        <div className="shrink-0 border-t border-sidebar-border px-5 py-4">
           <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <p className="text-xs text-muted-foreground">

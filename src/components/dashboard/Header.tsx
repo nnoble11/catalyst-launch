@@ -19,7 +19,7 @@ export function Header() {
   const { toggle } = useSidebarStore();
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 sm:px-6">
       {/* Left side - Menu & Search */}
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Mobile menu button */}
@@ -34,7 +34,7 @@ export function Header() {
         </Button>
 
         {/* Search - hidden on mobile, simplified on tablet */}
-        <button className="hidden sm:flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+        <button className="hidden sm:flex items-center gap-2.5 rounded-lg bg-muted/50 px-3.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
           <Search className="h-4 w-4" />
           <span className="hidden md:inline">Search...</span>
           <div className="hidden md:flex items-center gap-1 rounded bg-background px-1.5 py-0.5 text-xs">
