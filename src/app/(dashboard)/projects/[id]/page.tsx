@@ -66,9 +66,9 @@ interface Document {
 }
 
 const stageBadgeColors: Record<Stage, string> = {
-  ideation: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-  mvp: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-  gtm: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+  ideation: 'bg-stage-ideation-bg text-stage-ideation',
+  mvp: 'bg-stage-mvp-bg text-stage-mvp',
+  gtm: 'bg-stage-gtm-bg text-stage-gtm',
 };
 
 // Create a wrapper component that properly handles the promise
@@ -94,7 +94,7 @@ function AlertDialogWrapper({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-destructive hover:bg-destructive/90"
           >
             Delete
           </AlertDialogAction>
@@ -195,14 +195,14 @@ export default function ProjectDetailPage({
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               {project.name}
             </h1>
             <Badge className={stageBadgeColors[project.stage]} variant="secondary">
               {STAGE_LABELS[project.stage]}
             </Badge>
           </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             Created {formatDistanceToNow(new Date(project.createdAt))} ago
           </p>
         </div>
@@ -222,7 +222,7 @@ export default function ProjectDetailPage({
           <AlertDialogWrapper onConfirm={deleteProject}>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="icon">
-                <Trash2 className="h-4 w-4 text-red-600" />
+                <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
             </AlertDialogTrigger>
           </AlertDialogWrapper>
@@ -246,10 +246,10 @@ export default function ProjectDetailPage({
                 <CardContent className="space-y-4">
                   {project.description && (
                     <div>
-                      <h4 className="text-sm font-medium text-slate-500">
+                      <h4 className="text-sm font-medium text-muted-foreground">
                         Description
                       </h4>
-                      <p className="mt-1 text-slate-900 dark:text-white">
+                      <p className="mt-1 text-foreground">
                         {project.description}
                       </p>
                     </div>
@@ -257,10 +257,10 @@ export default function ProjectDetailPage({
 
                   {project.metadata?.problemStatement && (
                     <div>
-                      <h4 className="text-sm font-medium text-slate-500">
+                      <h4 className="text-sm font-medium text-muted-foreground">
                         Problem Statement
                       </h4>
-                      <p className="mt-1 text-slate-900 dark:text-white">
+                      <p className="mt-1 text-foreground">
                         {project.metadata.problemStatement}
                       </p>
                     </div>
@@ -268,10 +268,10 @@ export default function ProjectDetailPage({
 
                   {project.metadata?.targetAudience && (
                     <div>
-                      <h4 className="text-sm font-medium text-slate-500">
+                      <h4 className="text-sm font-medium text-muted-foreground">
                         Target Audience
                       </h4>
-                      <p className="mt-1 text-slate-900 dark:text-white">
+                      <p className="mt-1 text-foreground">
                         {project.metadata.targetAudience}
                       </p>
                     </div>
@@ -279,10 +279,10 @@ export default function ProjectDetailPage({
 
                   {project.metadata?.valueProposition && (
                     <div>
-                      <h4 className="text-sm font-medium text-slate-500">
+                      <h4 className="text-sm font-medium text-muted-foreground">
                         Value Proposition
                       </h4>
-                      <p className="mt-1 text-slate-900 dark:text-white">
+                      <p className="mt-1 text-foreground">
                         {project.metadata.valueProposition}
                       </p>
                     </div>
@@ -290,8 +290,8 @@ export default function ProjectDetailPage({
 
                   {project.metadata?.goals && project.metadata.goals.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium text-slate-500">Goals</h4>
-                      <ul className="mt-1 list-inside list-disc text-slate-900 dark:text-white">
+                      <h4 className="text-sm font-medium text-muted-foreground">Goals</h4>
+                      <ul className="mt-1 list-inside list-disc text-foreground">
                         {project.metadata.goals.map((goal, index) => (
                           <li key={index}>{goal}</li>
                         ))}
@@ -302,7 +302,7 @@ export default function ProjectDetailPage({
                   {!project.description &&
                     !project.metadata?.problemStatement &&
                     !project.metadata?.targetAudience && (
-                      <p className="text-slate-500">
+                      <p className="text-muted-foreground">
                         No additional details provided.
                       </p>
                     )}
@@ -333,8 +333,8 @@ export default function ProjectDetailPage({
                 <CardContent>
                   {documents.length === 0 ? (
                     <div className="text-center py-6">
-                      <FileText className="mx-auto h-12 w-12 text-slate-400" />
-                      <p className="mt-2 text-sm text-slate-500">
+                      <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">
                         No documents generated yet
                       </p>
                       <Link href={`/documents?projectId=${project.id}`}>
@@ -349,13 +349,13 @@ export default function ProjectDetailPage({
                         <Link
                           key={doc.id}
                           href={`/documents/${doc.id}`}
-                          className="flex items-center justify-between rounded-lg border p-3 hover:bg-slate-50 dark:hover:bg-slate-900"
+                          className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted"
                         >
                           <div className="flex items-center gap-3">
-                            <FileText className="h-5 w-5 text-slate-500" />
+                            <FileText className="h-5 w-5 text-muted-foreground" />
                             <span>{doc.title}</span>
                           </div>
-                          <span className="text-sm text-slate-500">
+                          <span className="text-sm text-muted-foreground">
                             {formatDistanceToNow(new Date(doc.createdAt))} ago
                           </span>
                         </Link>
@@ -375,7 +375,7 @@ export default function ProjectDetailPage({
             </CardHeader>
             <CardContent>
               <div className="text-center">
-                <div className="text-4xl font-bold text-blue-600">
+                <div className="text-4xl font-bold text-primary">
                   {project.milestones.length > 0
                     ? Math.round(
                         (completedMilestones / project.milestones.length) * 100
@@ -383,7 +383,7 @@ export default function ProjectDetailPage({
                     : 0}
                   %
                 </div>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   {completedMilestones} of {project.milestones.length} milestones
                   completed
                 </p>

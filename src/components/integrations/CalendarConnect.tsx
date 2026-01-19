@@ -246,19 +246,19 @@ export function CalendarConnect() {
               <p className="text-sm font-medium">Features enabled:</p>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   Import calendar events for AI context
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   Block focus time automatically
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   Milestone due date reminders
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   Schedule breakthrough sessions
                 </li>
               </ul>

@@ -146,7 +146,7 @@ export default function OnboardingPage() {
     <div className="mx-auto max-w-2xl py-8">
       <div className="mb-8">
         <Progress value={progress} className="h-2" />
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-muted-foreground">
           Step {currentStep + 1} of {STEPS.length}
         </p>
       </div>
@@ -154,14 +154,14 @@ export default function OnboardingPage() {
       <Card>
         <CardContent className="p-8">
           <h2 className="text-2xl font-bold">{STEPS[currentStep].title}</h2>
-          <p className="mt-2 text-slate-500">{STEPS[currentStep].description}</p>
+          <p className="mt-2 text-muted-foreground">{STEPS[currentStep].description}</p>
 
           <div className="mt-8">
             {currentStep === 0 && (
               <div className="space-y-6">
                 <div className="flex justify-center">
-                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                    <Rocket className="h-12 w-12 text-blue-600 dark:text-blue-400" />
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/10">
+                    <Rocket className="h-12 w-12 text-primary" />
                   </div>
                 </div>
                 <p className="text-center text-lg">
@@ -171,15 +171,15 @@ export default function OnboardingPage() {
                 </p>
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="rounded-lg border p-4 text-center">
-                    <Lightbulb className="mx-auto h-8 w-8 text-purple-600" />
+                    <Lightbulb className="mx-auto h-8 w-8 text-stage-ideation" />
                     <p className="mt-2 font-medium">AI Coaching</p>
                   </div>
                   <div className="rounded-lg border p-4 text-center">
-                    <Target className="mx-auto h-8 w-8 text-blue-600" />
+                    <Target className="mx-auto h-8 w-8 text-primary" />
                     <p className="mt-2 font-medium">Milestone Tracking</p>
                   </div>
                   <div className="rounded-lg border p-4 text-center">
-                    <Check className="mx-auto h-8 w-8 text-green-600" />
+                    <Check className="mx-auto h-8 w-8 text-success" />
                     <p className="mt-2 font-medium">Document Generation</p>
                   </div>
                 </div>
@@ -250,28 +250,28 @@ export default function OnboardingPage() {
                     className={cn(
                       'flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-colors',
                       formData.stage === stage
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-                        : 'border-slate-200 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-border/80'
                     )}
                   >
                     <div
                       className={cn(
                         'flex h-12 w-12 items-center justify-center rounded-lg',
                         formData.stage === stage
-                          ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
-                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-muted text-muted-foreground'
                       )}
                     >
                       {stageIcons[stage]}
                     </div>
                     <div>
                       <p className="font-semibold">{STAGE_LABELS[stage]}</p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-muted-foreground">
                         {stageDescriptions[stage]}
                       </p>
                     </div>
                     {formData.stage === stage && (
-                      <Check className="ml-auto h-5 w-5 text-blue-600" />
+                      <Check className="ml-auto h-5 w-5 text-primary" />
                     )}
                   </button>
                 ))}
@@ -280,7 +280,7 @@ export default function OnboardingPage() {
 
             {currentStep === 3 && (
               <div className="space-y-6">
-                <p className="text-slate-600 dark:text-slate-400">
+                <p className="text-muted-foreground">
                   What do you want to accomplish in the next 90 days? These will
                   help us personalize your experience.
                 </p>

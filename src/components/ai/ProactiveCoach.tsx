@@ -29,9 +29,9 @@ const suggestionIcons = {
 };
 
 const priorityColors = {
-  high: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-  medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-  low: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+  high: 'bg-priority-urgent-bg text-priority-urgent',
+  medium: 'bg-warning/10 text-warning',
+  low: 'bg-success/10 text-success',
 };
 
 export function ProactiveCoach({ projectId, onDismiss }: ProactiveCoachProps) {
@@ -120,10 +120,10 @@ export function ProactiveCoach({ projectId, onDismiss }: ProactiveCoachProps) {
 
   if (!stuckStatus?.isStuck && visibleSuggestions.length === 0) {
     return (
-      <Card className="border-green-200 dark:border-green-800">
+      <Card className="border-success/30">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
             <CardTitle className="text-lg">You&apos;re on Track!</CardTitle>
           </div>
           <CardDescription>

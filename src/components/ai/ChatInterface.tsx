@@ -179,11 +179,11 @@ export function ChatInterface({
         <div className="space-y-4">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                <Sparkles className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <Sparkles className="h-8 w-8 text-primary" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">AI Startup Coach</h3>
-              <p className="mt-2 max-w-sm text-sm text-slate-500">
+              <p className="mt-2 max-w-sm text-sm text-muted-foreground">
                 I&apos;m here to help you build your startup. Ask me anything about
                 your idea, strategy, or next steps.
               </p>
@@ -202,8 +202,8 @@ export function ChatInterface({
                 <AvatarFallback
                   className={cn(
                     message.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-200 dark:bg-slate-700'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
                   )}
                 >
                   {message.role === 'user' ? (
@@ -217,15 +217,15 @@ export function ChatInterface({
                 className={cn(
                   'max-w-[80%] rounded-lg px-4 py-2',
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-foreground'
                 )}
               >
                 {message.content ? (
                   <div className={cn(
                     'prose prose-sm max-w-none break-words',
                     message.role === 'user'
-                      ? 'prose-invert prose-p:text-white prose-strong:text-white prose-li:text-white'
+                      ? 'prose-invert prose-p:text-primary-foreground prose-strong:text-primary-foreground prose-li:text-primary-foreground'
                       : 'dark:prose-invert'
                   )}>
                     <ReactMarkdown
@@ -237,12 +237,12 @@ export function ChatInterface({
                         strong: ({ children }) => <strong className="font-bold">{children}</strong>,
                         em: ({ children }) => <em className="italic">{children}</em>,
                         code: ({ children }) => (
-                          <code className="rounded bg-slate-200 dark:bg-slate-700 px-1 py-0.5 text-sm font-mono">
+                          <code className="rounded bg-background/50 px-1 py-0.5 text-sm font-mono">
                             {children}
                           </code>
                         ),
                         pre: ({ children }) => (
-                          <pre className="rounded bg-slate-200 dark:bg-slate-700 p-2 overflow-x-auto text-sm">
+                          <pre className="rounded bg-background/50 p-2 overflow-x-auto text-sm">
                             {children}
                           </pre>
                         ),
@@ -269,7 +269,7 @@ export function ChatInterface({
         </div>
       </ScrollArea>
 
-      <div className="border-t border-slate-200 p-4 dark:border-slate-800">
+      <div className="border-t border-border p-4">
         <div className="flex gap-2">
           <Textarea
             ref={textareaRef}
@@ -293,7 +293,7 @@ export function ChatInterface({
             )}
           </Button>
         </div>
-        <p className="mt-2 text-xs text-slate-500">
+        <p className="mt-2 text-xs text-muted-foreground">
           Press Enter to send, Shift+Enter for new line
         </p>
       </div>

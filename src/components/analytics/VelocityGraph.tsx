@@ -18,20 +18,20 @@ interface VelocityGraphProps {
 const trendConfig = {
   accelerating: {
     icon: TrendingUp,
-    color: 'text-green-500',
-    bgColor: 'bg-green-100 dark:bg-green-900',
+    color: 'text-success',
+    bgColor: 'bg-success/10',
     label: 'Accelerating',
   },
   stable: {
     icon: Minus,
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-100 dark:bg-yellow-900',
+    color: 'text-warning',
+    bgColor: 'bg-warning/10',
     label: 'Stable',
   },
   slowing: {
     icon: TrendingDown,
-    color: 'text-red-500',
-    bgColor: 'bg-red-100 dark:bg-red-900',
+    color: 'text-destructive',
+    bgColor: 'bg-destructive/10',
     label: 'Slowing',
   },
 };
@@ -81,9 +81,9 @@ export function VelocityGraph({ data }: VelocityGraphProps) {
           <div className="text-center p-4 rounded-lg bg-muted/50">
             <div className="flex items-center justify-center gap-1 mb-1">
               {monthChange >= 0 ? (
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-success" />
               ) : (
-                <TrendingDown className="h-4 w-4 text-red-500" />
+                <TrendingDown className="h-4 w-4 text-destructive" />
               )}
             </div>
             <p className="text-2xl font-bold">

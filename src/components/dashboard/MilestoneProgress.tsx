@@ -132,7 +132,7 @@ export function MilestoneProgress({
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Milestones</h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted-foreground">
             {completedCount} of {milestones.length} completed
           </p>
         </div>
@@ -182,7 +182,7 @@ export function MilestoneProgress({
         {milestones.map((milestone) => (
           <div
             key={milestone.id}
-            className="group flex items-center justify-between rounded-lg border border-slate-200 p-3 dark:border-slate-800"
+            className="group flex items-center justify-between rounded-lg border border-border p-3"
           >
             <button
               className="flex flex-1 items-center gap-3 text-left"
@@ -190,22 +190,22 @@ export function MilestoneProgress({
               disabled={loading}
             >
               {milestone.isCompleted ? (
-                <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-600" />
+                <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-success" />
               ) : (
-                <Circle className="h-5 w-5 flex-shrink-0 text-slate-400" />
+                <Circle className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
               )}
               <div>
                 <p
                   className={
                     milestone.isCompleted
-                      ? 'text-slate-500 line-through'
-                      : 'text-slate-900 dark:text-white'
+                      ? 'text-muted-foreground line-through'
+                      : 'text-foreground'
                   }
                 >
                   {milestone.title}
                 </p>
                 {milestone.description && (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted-foreground">
                     {milestone.description}
                   </p>
                 )}
@@ -219,14 +219,14 @@ export function MilestoneProgress({
               onClick={() => deleteMilestone(milestone.id)}
               disabled={loading}
             >
-              <Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" />
+              <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
             </Button>
           </div>
         ))}
 
         {milestones.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
-            <p className="text-sm text-slate-500">
+          <div className="rounded-lg border border-dashed border-border p-6 text-center">
+            <p className="text-sm text-muted-foreground">
               No milestones yet. Add one to track your progress.
             </p>
           </div>

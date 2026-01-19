@@ -234,7 +234,7 @@ export default function LeaderboardPage() {
           {ideas.map((idea, index) => (
             <Card key={idea.id} className="overflow-hidden">
               <div className="flex">
-                <div className="flex flex-col items-center justify-center border-r border-border px-4 py-6 dark:border-slate-800">
+                <div className="flex flex-col items-center justify-center border-r border-border px-4 py-6">
                   <Button
                     variant="ghost"
                     size="sm"

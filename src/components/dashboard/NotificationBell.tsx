@@ -93,11 +93,11 @@ export function NotificationBell() {
         <DropdownMenuSeparator />
         <ScrollArea className="h-[300px]">
           {error ? (
-            <div className="p-4 text-center text-sm text-red-500">
+            <div className="p-4 text-center text-sm text-destructive">
               {error}
             </div>
           ) : notifications.length === 0 ? (
-            <div className="p-4 text-center text-sm text-slate-500">
+            <div className="p-4 text-center text-sm text-muted-foreground">
               No notifications yet
             </div>
           ) : (
@@ -109,13 +109,13 @@ export function NotificationBell() {
               >
                 <div className="flex items-center gap-2">
                   {!notification.isRead && (
-                    <div className="h-2 w-2 rounded-full bg-blue-600" />
+                    <div className="h-2 w-2 rounded-full bg-primary" />
                   )}
                   <span className="font-medium text-sm">
                     {notification.title}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 line-clamp-2">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {notification.message}
                 </p>
               </DropdownMenuItem>

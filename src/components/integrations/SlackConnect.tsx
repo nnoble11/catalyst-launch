@@ -155,19 +155,19 @@ export function SlackConnect() {
               <p className="text-sm font-medium">Features enabled:</p>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   Real-time message capture for AI context
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   Daily check-in reminders via DM
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   Quick capture from Slack
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Check className="h-4 w-4 text-success" />
                   /catalyst slash command
                 </li>
               </ul>

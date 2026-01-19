@@ -51,7 +51,7 @@ export function PredictionCard({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Target className="h-4 w-4 text-green-500" />
+              <Target className="h-4 w-4 text-success" />
               Focus Areas
             </CardTitle>
           </CardHeader>
@@ -63,7 +63,7 @@ export function PredictionCard({
                     key={index}
                     className="flex items-center gap-2 text-sm text-muted-foreground"
                   >
-                    <ArrowRight className="h-3 w-3 text-green-500 flex-shrink-0" />
+                    <ArrowRight className="h-3 w-3 text-success flex-shrink-0" />
                     {area}
                   </li>
                 ))}

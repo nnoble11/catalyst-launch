@@ -69,7 +69,7 @@ function normalizeValue(value: unknown): string {
 function renderContent(content: unknown): React.ReactNode {
   // Handle null/undefined
   if (content === null || content === undefined) {
-    return <span className="text-slate-400 italic">No content</span>;
+    return <span className="text-muted-foreground italic">No content</span>;
   }
 
   // Handle strings directly
@@ -106,9 +106,9 @@ function renderContent(content: unknown): React.ReactNode {
             {content.map((item, index) => {
               const feat = item as { feature: unknown; description: unknown };
               return (
-                <li key={index} className="border-l-2 border-blue-500 pl-3">
+                <li key={index} className="border-l-2 border-primary pl-3">
                   <strong>{normalizeValue(feat.feature)}</strong>
-                  <p className="text-slate-600 dark:text-slate-400 mt-1">
+                  <p className="text-muted-foreground mt-1">
                     {normalizeValue(feat.description)}
                   </p>
                 </li>
@@ -125,9 +125,9 @@ function renderContent(content: unknown): React.ReactNode {
             {content.map((item, index) => {
               const qa = item as { question: unknown; answer: unknown };
               return (
-                <div key={index} className="border-b border-slate-200 dark:border-slate-700 pb-3">
+                <div key={index} className="border-b border-border pb-3">
                   <p className="font-semibold">{normalizeValue(qa.question)}</p>
-                  <p className="text-slate-600 dark:text-slate-400 mt-1">
+                  <p className="text-muted-foreground mt-1">
                     {normalizeValue(qa.answer)}
                   </p>
                 </div>
@@ -148,7 +148,7 @@ function renderContent(content: unknown): React.ReactNode {
               return (
                 <li key={index}>
                   <strong>{normalizeValue(title)}</strong>
-                  {desc !== undefined && desc !== null && <p className="text-slate-600 dark:text-slate-400">{normalizeValue(desc)}</p>}
+                  {desc !== undefined && desc !== null && <p className="text-muted-foreground">{normalizeValue(desc)}</p>}
                 </li>
               );
             })}
@@ -203,7 +203,7 @@ function renderContent(content: unknown): React.ReactNode {
           .map(([key, value]) => (
             <div key={key}>
               <dt className="font-semibold capitalize">{key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim()}</dt>
-              <dd className="ml-4 text-slate-600 dark:text-slate-400">
+              <dd className="ml-4 text-muted-foreground">
                 {typeof value === 'object' ? renderContent(value) : normalizeValue(value)}
               </dd>
             </div>
@@ -346,7 +346,7 @@ export function DocumentPreview({ document }: DocumentPreviewProps) {
               open={expandedSections.has(section.id)}
               onOpenChange={() => toggleSection(section.id)}
             >
-              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border border-slate-200 p-4 text-left hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900">
+              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border border-border p-4 text-left hover:bg-muted">
                 <h3 className="font-semibold">{section.title}</h3>
                 {expandedSections.has(section.id) ? (
                   <ChevronUp className="h-4 w-4" />

@@ -319,7 +319,7 @@ export default function IntegrationsPage() {
 
         <TabsContent value={activeCategory} className="mt-6">
           {activeCategory === 'connected' && connectedCount === 0 ? (
-            <div className="rounded-lg border border-dashed border-border p-12 text-center dark:border-slate-700">
+            <div className="rounded-lg border border-dashed border-border p-12 text-center">
               <Globe className="mx-auto h-12 w-12 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">No Integrations Connected</h3>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -413,12 +413,12 @@ export default function IntegrationsPage() {
 
       {/* Stats Footer */}
       {connectedCount > 0 && (
-        <div className="rounded-lg bg-muted/50 p-4 dark:bg-slate-900">
+        <div className="rounded-lg bg-muted/50 p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-slate-600 dark:text-muted-foreground">
+                <span className="text-muted-foreground">
                   Last sync: Recently
                 </span>
               </div>
