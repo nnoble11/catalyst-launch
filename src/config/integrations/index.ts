@@ -174,7 +174,7 @@ export const OAUTH_CONFIGS: Partial<Record<IntegrationProvider, IntegrationOAuth
     clientId: process.env.STRIPE_CLIENT_ID || '',
     clientSecret: process.env.STRIPE_SECRET_KEY || '',
     redirectUri: `${APP_URL}/api/integrations/stripe/callback`,
-    scopes: ['read_only'],
+    scopes: ['read_write'],
     authorizationUrl: 'https://connect.stripe.com/oauth/authorize',
     tokenUrl: 'https://connect.stripe.com/oauth/token',
   },

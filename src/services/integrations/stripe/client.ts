@@ -62,7 +62,7 @@ export class StripeIntegration extends BaseIntegration {
     icon: 'credit-card',
     category: 'productivity',
     authMethod: 'oauth2',
-    scopes: ['read_only'],
+    scopes: ['read_write'],
     syncMethod: 'webhook',
     supportedTypes: ['note'],
     defaultSyncInterval: 60,
@@ -91,7 +91,7 @@ export class StripeIntegration extends BaseIntegration {
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: config.clientId,
-      scope: 'read_only',
+      scope: 'read_write',
       state,
       redirect_uri: config.redirectUri,
     });
