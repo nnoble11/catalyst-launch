@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, AuthError } from '@/lib/auth';
 import { db } from '@/lib/db/client';
-import { integrations } from '@/lib/db/schema';
+import { integrations, webhookSubscriptions } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import githubIntegration from '@/services/integrations/github/client';
 
@@ -123,9 +123,76 @@ export async function POST(request: NextRequest) {
       })
       .where(eq(integrations.id, integration.id));
 
+    // Register webhooks for selected repositories
+    let webhookRegistered = false;
+    if (selectedRepositories.length > 0) {
+      try {
+        // Get the base URL for webhooks
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : 'http://localhost:3000';
+        const webhookUrl = `${baseUrl}/api/integrations/github/webhook`;
+
+        // Create context for webhook registration
+        const context = {
+          userId: user.id,
+          integrationId: integration.id,
+          tokens: { accessToken: integration.accessToken },
+          metadata: updatedMetadata,
+        };
+
+        // Register webhooks
+        const result = await githubIntegration.registerWebhook(context, webhookUrl);
+
+        if (result.webhookId) {
+          // Check if webhook subscription already exists
+          const [existingWebhook] = await db.select()
+            .from(webhookSubscriptions)
+            .where(
+              and(
+                eq(webhookSubscriptions.integrationId, integration.id),
+                eq(webhookSubscriptions.provider, 'github')
+              )
+            )
+            .limit(1);
+
+          if (existingWebhook) {
+            // Update existing
+            await db.update(webhookSubscriptions)
+              .set({
+                webhookId: result.webhookId,
+                webhookUrl,
+                secret: result.secret,
+                events: ['push', 'pull_request', 'issues', 'release', 'issue_comment'],
+                isActive: true,
+                updatedAt: new Date(),
+              })
+              .where(eq(webhookSubscriptions.id, existingWebhook.id));
+          } else {
+            // Create new
+            await db.insert(webhookSubscriptions).values({
+              userId: user.id,
+              integrationId: integration.id,
+              provider: 'github',
+              webhookId: result.webhookId,
+              webhookUrl,
+              secret: result.secret,
+              events: ['push', 'pull_request', 'issues', 'release', 'issue_comment'],
+              isActive: true,
+            });
+          }
+          webhookRegistered = true;
+        }
+      } catch (webhookError) {
+        // Log but don't fail - webhooks are optional enhancement
+        console.error('[GitHub Repos] Failed to register webhooks:', webhookError);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       selectedRepositories,
+      webhookRegistered,
       message: `Now monitoring ${selectedRepositories.length} repositories`,
     });
   } catch (error) {

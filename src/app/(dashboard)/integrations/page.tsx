@@ -32,6 +32,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { IntegrationCard } from '@/components/integrations/IntegrationCard';
+import { GitHubRepoSelector } from '@/components/integrations/GitHubRepoSelector';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -90,6 +91,7 @@ interface IntegrationStatus {
   connected: boolean;
   lastSyncAt?: string;
   error?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface IntegrationsResponse {
@@ -103,6 +105,7 @@ export default function IntegrationsPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [githubRepoSelectorOpen, setGithubRepoSelectorOpen] = useState(false);
 
   const fetchIntegrations = useCallback(async () => {
     try {
@@ -110,11 +113,12 @@ export default function IntegrationsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // Set connected integrations
+        // Set connected integrations with metadata
         setConnectedIntegrations(
           data.data?.map((i: { provider: string; metadata?: Record<string, unknown> }) => ({
             provider: i.provider,
             connected: true,
+            metadata: i.metadata,
           })) || []
         );
       }
@@ -144,6 +148,22 @@ export default function IntegrationsPage() {
 
   const getConnectionStatus = (provider: string): IntegrationStatus | undefined => {
     return connectedIntegrations.find((i) => i.provider === provider);
+  };
+
+  const needsConfiguration = (provider: string): boolean => {
+    if (provider === 'github') {
+      const status = getConnectionStatus('github');
+      if (!status?.connected) return false;
+      const selectedRepos = (status.metadata?.selectedRepositories as string[]) || [];
+      return selectedRepos.length === 0;
+    }
+    return false;
+  };
+
+  const handleConfigure = (provider: string) => {
+    if (provider === 'github') {
+      setGithubRepoSelectorOpen(true);
+    }
   };
 
   const handleConnect = async (provider: IntegrationProvider) => {
@@ -358,9 +378,11 @@ export default function IntegrationsPage() {
                     onConnect={() => handleConnect(def.id)}
                     onDisconnect={() => handleDisconnect(def.id)}
                     onSync={def.isAvailable && isConnected(def.id) ? () => handleSync(def.id) : undefined}
+                    onConfigure={def.id === 'github' && isConnected(def.id) ? () => handleConfigure(def.id) : undefined}
                     isSyncing={syncing === def.id}
                     syncStatus={getConnectionStatus(def.id)}
                     features={def.features}
+                    needsConfiguration={needsConfiguration(def.id)}
                   />
                 ))}
               </div>
@@ -397,9 +419,11 @@ export default function IntegrationsPage() {
                           onConnect={() => handleConnect(def.id)}
                           onDisconnect={() => handleDisconnect(def.id)}
                           onSync={def.isAvailable && isConnected(def.id) ? () => handleSync(def.id) : undefined}
+                          onConfigure={def.id === 'github' && isConnected(def.id) ? () => handleConfigure(def.id) : undefined}
                           isSyncing={syncing === def.id}
                           syncStatus={getConnectionStatus(def.id)}
                           features={def.features}
+                          needsConfiguration={needsConfiguration(def.id)}
                         />
                       ))}
                     </div>
@@ -436,6 +460,13 @@ export default function IntegrationsPage() {
           </div>
         </div>
       )}
+
+      {/* GitHub Repo Selector Dialog */}
+      <GitHubRepoSelector
+        open={githubRepoSelectorOpen}
+        onOpenChange={setGithubRepoSelectorOpen}
+        onSave={() => fetchIntegrations()}
+      />
     </div>
   );
 }

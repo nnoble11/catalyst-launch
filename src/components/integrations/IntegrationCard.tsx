@@ -11,6 +11,8 @@ import {
   ArrowLeftRight,
   Webhook,
   Clock,
+  Settings,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   Card,
@@ -53,9 +55,11 @@ interface IntegrationCardProps {
   onConnect?: () => void;
   onDisconnect?: () => void;
   onSync?: () => void;
+  onConfigure?: () => void;
   isSyncing?: boolean;
   syncStatus?: SyncStatus;
   features?: IntegrationFeatures;
+  needsConfiguration?: boolean;
 }
 
 export function IntegrationCard({
@@ -68,9 +72,11 @@ export function IntegrationCard({
   onConnect,
   onDisconnect,
   onSync,
+  onConfigure,
   isSyncing,
   syncStatus,
   features,
+  needsConfiguration,
 }: IntegrationCardProps) {
   const [loading, setLoading] = useState(false);
 
@@ -223,6 +229,14 @@ export function IntegrationCard({
           </div>
         )}
 
+        {/* Needs Configuration Warning */}
+        {isConnected && needsConfiguration && (
+          <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            <span>Configuration required to start syncing</span>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex items-center gap-2">
           {isConnected ? (
@@ -238,7 +252,17 @@ export function IntegrationCard({
                 ) : null}
                 Disconnect
               </Button>
-              {onSync && (
+              {onConfigure && (
+                <Button
+                  variant={needsConfiguration ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={onConfigure}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Configure
+                </Button>
+              )}
+              {onSync && !needsConfiguration && (
                 <Button
                   variant="ghost"
                   size="sm"

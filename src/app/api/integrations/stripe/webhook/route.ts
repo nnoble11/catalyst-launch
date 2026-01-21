@@ -4,9 +4,16 @@ import { WEBHOOK_SECRETS } from '@/config/integrations';
 import { getIntegrationByProvider, getProjectById } from '@/lib/db/queries';
 import stripeIntegration from '@/services/integrations/stripe/client';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-12-15.clover',
-});
+// Lazy-load stripe client to avoid initialization errors during build
+function getStripeClient() {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('STRIPE_SECRET_KEY is not configured');
+  }
+  return new Stripe(secretKey, {
+    apiVersion: '2025-12-15.clover',
+  });
+}
 
 /**
  * POST /api/integrations/stripe/webhook
@@ -35,6 +42,7 @@ export async function POST(request: NextRequest) {
   let event: Stripe.Event;
 
   try {
+    const stripe = getStripeClient();
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';

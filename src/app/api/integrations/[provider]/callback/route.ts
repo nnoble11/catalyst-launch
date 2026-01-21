@@ -3,6 +3,10 @@ import { requireAuth, AuthError } from '@/lib/auth';
 import { integrationRegistry, validateOAuthState } from '@/services/integrations';
 import { upsertIntegration, upsertSyncState } from '@/lib/db/queries';
 import { normalizeProviderId } from '@/config/integrations';
+import { IntegrationSyncService } from '@/services/integrations/IntegrationSyncService';
+
+// Providers that don't need additional configuration before syncing
+const AUTO_SYNC_PROVIDERS = ['stripe', 'slack', 'notion', 'google_calendar', 'linear', 'todoist'];
 
 /**
  * GET /api/integrations/[provider]/callback
@@ -88,6 +92,15 @@ export async function GET(
       status: 'pending',
       nextSyncAt: new Date(), // Schedule immediate first sync
     });
+
+    // Trigger immediate first sync for providers that don't need configuration
+    // This runs in the background and doesn't block the redirect
+    if (AUTO_SYNC_PROVIDERS.includes(provider)) {
+      const syncService = new IntegrationSyncService();
+      syncService.syncIntegration(user.id, provider).catch((err) => {
+        console.error(`[OAuth Callback] Background sync failed for ${provider}:`, err);
+      });
+    }
 
     // Redirect back to integrations page with success
     redirectUrl.searchParams.set('connected', provider);
