@@ -183,10 +183,25 @@ export class GmailIntegration extends BaseIntegration {
     options?: SyncOptions
   ): Promise<StandardIngestItem[]> {
     const items: StandardIngestItem[] = [];
-    const limit = options?.limit || 20;
+    const limit = options?.limit || 50;
 
-    // Fetch starred or important emails
-    const query = 'is:starred OR is:important';
+    // Build query - fetch recent inbox emails
+    // Use date filter if since is provided, otherwise fetch from inbox
+    let query = 'in:inbox';
+
+    if (options?.since) {
+      // Gmail uses after: with YYYY/MM/DD format
+      const sinceDate = new Date(options.since);
+      const dateStr = `${sinceDate.getFullYear()}/${String(sinceDate.getMonth() + 1).padStart(2, '0')}/${String(sinceDate.getDate()).padStart(2, '0')}`;
+      query += ` after:${dateStr}`;
+    } else {
+      // Default to last 7 days if no since date
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const dateStr = `${sevenDaysAgo.getFullYear()}/${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}/${String(sevenDaysAgo.getDate()).padStart(2, '0')}`;
+      query += ` after:${dateStr}`;
+    }
+
     const messageIds = await this.listMessages(
       context.tokens.accessToken,
       query,

@@ -4,6 +4,7 @@ import {
   getConversationById,
   getMessagesByConversationId,
   createMessage,
+  updateConversation,
 } from '@/lib/db/queries';
 
 export async function GET(
@@ -88,6 +89,9 @@ export async function POST(
       content,
       metadata,
     });
+
+    // Update conversation's updatedAt timestamp
+    await updateConversation(id, {});
 
     return NextResponse.json({ success: true, data: message }, { status: 201 });
   } catch (error) {

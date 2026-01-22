@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { requireAuth, AuthError } from '@/lib/auth';
-import { getProjectById, createMessage, createActivity, getIngestedItemsByUserId } from '@/lib/db/queries';
+import { getProjectById, createMessage, createActivity, getIngestedItemsByUserId, updateConversation } from '@/lib/db/queries';
 import { streamChat, type AIProvider } from '@/services/ai/orchestrator';
 import { createSSEStream } from '@/services/ai/streaming';
 
@@ -100,6 +100,9 @@ export async function POST(request: NextRequest) {
             content: fullResponse,
             metadata: { model: provider === 'openai' ? 'gpt-4o' : 'claude-sonnet-4-20250514' },
           });
+
+          // Update conversation's updatedAt timestamp
+          await updateConversation(conversationId, {});
 
           // Log activity
           await createActivity({
