@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Plus, MessageSquare, Trash2, ChevronLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -39,15 +39,26 @@ interface Message {
 
 function ChatPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const projectIdFromUrl = searchParams.get('projectId');
+  const conversationIdFromUrl = searchParams.get('conversationId');
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationIdFromUrl);
   const [selectedProject, setSelectedProject] = useState<string | null>(projectIdFromUrl);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSidebar, setShowSidebar] = useState(true);
+
+  // Update URL when conversation changes
+  const updateUrlParams = useCallback((conversationId: string | null, projectId: string | null) => {
+    const params = new URLSearchParams();
+    if (projectId) params.set('projectId', projectId);
+    if (conversationId) params.set('conversationId', conversationId);
+    const newUrl = params.toString() ? `/chat?${params.toString()}` : '/chat';
+    router.replace(newUrl, { scroll: false });
+  }, [router]);
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -105,14 +116,21 @@ function ChatPageContent() {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation);
+      updateUrlParams(selectedConversation, selectedProject);
       // Hide sidebar on mobile when conversation is selected
       if (window.innerWidth < 768) {
         setShowSidebar(false);
       }
     } else {
       setMessages([]);
+      updateUrlParams(null, selectedProject);
     }
-  }, [selectedConversation, fetchMessages]);
+  }, [selectedConversation, selectedProject, fetchMessages, updateUrlParams]);
+
+  // Re-fetch conversations when project filter changes
+  useEffect(() => {
+    fetchConversations();
+  }, [selectedProject, fetchConversations]);
 
   const createConversation = async () => {
     try {

@@ -74,6 +74,21 @@ export function buildContextualPrompt(context: {
   let prompt = `${BASE_SYSTEM_PROMPT}\n\n`;
   prompt += `${getStageSpecificPrompt(context.stage)}\n\n`;
 
+  // Add current date/time context
+  const now = new Date();
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  };
+  prompt += `Current date and time: ${now.toLocaleDateString('en-US', dateOptions)} at ${now.toLocaleTimeString('en-US', timeOptions)}\n\n`;
+
   prompt += `Current project context:\n`;
   prompt += `- Project: ${context.projectName}\n`;
   prompt += `- Stage: ${context.stage}\n`;
