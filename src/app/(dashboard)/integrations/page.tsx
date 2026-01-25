@@ -225,7 +225,7 @@ export default function IntegrationsPage() {
   const handleSync = async (provider: string) => {
     setSyncing(provider);
     try {
-      const slug = providerIdToSlug(provider);
+      const slug = providerIdToSlug(provider as IntegrationProvider);
       const response = await fetch(`/api/integrations/${slug}/sync`, {
         method: 'POST',
       });
