@@ -152,7 +152,11 @@ export async function buildMemoryContext(
     return '';
   }
 
-  const groupedMemories = memories.reduce(
+  const maxMemories = 60;
+  const limitedMemories = memories.slice(0, maxMemories);
+  const omittedCount = Math.max(0, memories.length - limitedMemories.length);
+
+  const groupedMemories = limitedMemories.reduce(
     (acc, memory) => {
       const category = memory.category || 'general';
       if (!acc[category]) {
@@ -172,6 +176,10 @@ export async function buildMemoryContext(
     for (const memory of categoryMemories) {
       context += `- ${memory.key}: ${memory.value}\n`;
     }
+  }
+
+  if (omittedCount > 0) {
+    context += `\nAdditional memories available: ${omittedCount} more not shown.\n`;
   }
 
   return context;

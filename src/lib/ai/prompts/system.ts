@@ -54,6 +54,8 @@ interface IntegrationContext {
   content?: string;
   itemType?: string;
   syncedAt?: Date;
+  sourceUrl?: string;
+  createdAt?: Date;
   metadata?: {
     timestamp?: Date | string;
     custom?: {
@@ -69,6 +71,9 @@ export function buildContextualPrompt(context: {
   description?: string;
   milestones?: { title: string; isCompleted: boolean }[];
   recentActivity?: { type: string; data: unknown }[];
+  memoryContext?: string;
+  integrationSummary?: string;
+  integrationHighlights?: string[];
   integrationData?: IntegrationContext[];
 }): string {
   let prompt = `${BASE_SYSTEM_PROMPT}\n\n`;
@@ -111,10 +116,24 @@ export function buildContextualPrompt(context: {
     }
   }
 
+  if (context.memoryContext) {
+    prompt += `\n${context.memoryContext}\n`;
+  }
+
   // Include integration data if available
   if (context.integrationData && context.integrationData.length > 0) {
     prompt += `\n## Connected Integration Data\n`;
-    prompt += `The user has connected external tools. Here's relevant recent data:\n\n`;
+    prompt += `The user has connected external tools. Use this data holistically for insights, recommendations, and next steps.\n`;
+    if (context.integrationSummary) {
+      prompt += `${context.integrationSummary}\n`;
+    }
+    if (context.integrationHighlights && context.integrationHighlights.length > 0) {
+      prompt += `Key highlights:\n`;
+      context.integrationHighlights.forEach((highlight) => {
+        prompt += `- ${highlight}\n`;
+      });
+    }
+    prompt += '\n';
 
     const now = new Date();
 
@@ -147,7 +166,7 @@ export function buildContextualPrompt(context: {
       if (filteredItems.length === 0) continue;
 
       prompt += `### ${provider.charAt(0).toUpperCase() + provider.slice(1)}\n`;
-      filteredItems.slice(0, 5).forEach((item) => {
+      filteredItems.forEach((item) => {
         if (item.title) {
           prompt += `- **${item.title}**`;
           if (item.itemType) prompt += ` (${item.itemType})`;
@@ -168,6 +187,12 @@ export function buildContextualPrompt(context: {
               ? item.content.substring(0, 200) + '...'
               : item.content;
             prompt += `  ${truncated}\n`;
+          }
+          if (item.sourceUrl) {
+            prompt += `  Source: ${item.sourceUrl}\n`;
+          }
+          if (item.createdAt && provider !== 'google calendar') {
+            prompt += `  Ingested: ${new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}\n`;
           }
         }
       });

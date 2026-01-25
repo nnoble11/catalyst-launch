@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server';
 import { requireAuth, AuthError } from '@/lib/auth';
-import { getProjectById, createMessage, createActivity, getIngestedItemsByUserId, updateConversation } from '@/lib/db/queries';
+import { getProjectById, createMessage, createActivity, updateConversation } from '@/lib/db/queries';
 import { streamChat, type AIProvider } from '@/services/ai/orchestrator';
 import { createSSEStream } from '@/services/ai/streaming';
+import { buildMemoryContext } from '@/services/ai/memory-manager';
+import { buildIntegrationContext } from '@/services/ai/context/integration-context';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +37,10 @@ export async function POST(request: NextRequest) {
       stage?: 'ideation' | 'mvp' | 'gtm';
       description?: string;
       milestones?: { title: string; isCompleted: boolean }[];
-      integrationData?: { provider: string; title?: string; content?: string; itemType?: string }[];
+      integrationData?: { provider: string; title?: string; content?: string; itemType?: string; sourceUrl?: string; createdAt?: Date }[];
+      integrationSummary?: string;
+      integrationHighlights?: string[];
+      memoryContext?: string;
     } = {};
 
     if (projectId) {
@@ -54,26 +59,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fetch recent integration data for AI context
+    // Fetch integration data and memory context for AI
     try {
-      const ingestedItems = await getIngestedItemsByUserId(user.id, {
-        status: 'processed',
-        limit: 30,
-      });
-      if (ingestedItems.length > 0) {
-        context.integrationData = ingestedItems.map((item) => ({
-          provider: item.provider,
-          title: item.title || undefined,
-          content: item.content || undefined,
-          itemType: item.itemType,
-          metadata: item.metadata as {
-            timestamp?: Date | string;
-            custom?: {
-              start?: { dateTime?: string; date?: string };
-              end?: { dateTime?: string; date?: string };
-            };
-          } | undefined,
-        }));
+      const [memoryContext, integrationContext] = await Promise.all([
+        buildMemoryContext(user.id, projectId),
+        buildIntegrationContext(user.id, {
+          messages,
+          projectName: context.projectName,
+          projectDescription: context.description,
+          status: 'processed',
+          recentLimit: 80,
+          searchLimit: 80,
+          maxItems: 60,
+          recentDays: 90,
+          maxPerProvider: 12,
+        }),
+      ]);
+
+      if (memoryContext) {
+        context.memoryContext = memoryContext;
+      }
+      if (integrationContext.items.length > 0) {
+        context.integrationData = integrationContext.items;
+        context.integrationSummary = integrationContext.summary;
+        context.integrationHighlights = integrationContext.highlights;
       }
     } catch {
       // Non-critical: integration data fetch failure shouldn't block chat

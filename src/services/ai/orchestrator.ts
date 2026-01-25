@@ -16,11 +16,16 @@ interface ChatContext {
   stage?: Stage;
   description?: string;
   milestones?: { title: string; isCompleted: boolean }[];
+  memoryContext?: string;
+  integrationSummary?: string;
+  integrationHighlights?: string[];
   integrationData?: {
     provider: string;
     title?: string;
     content?: string;
     itemType?: string;
+    sourceUrl?: string;
+    createdAt?: Date;
     metadata?: {
       timestamp?: Date | string;
       custom?: {
@@ -42,12 +47,18 @@ export async function* streamChat(
         projectName: context.projectName,
         description: context.description,
         milestones: context.milestones,
+        memoryContext: context.memoryContext,
+        integrationSummary: context.integrationSummary,
+        integrationHighlights: context.integrationHighlights,
         integrationData: context.integrationData,
       })
     : buildContextualPrompt({
         stage: 'ideation',
         projectName: 'General',
         description: 'General startup coaching session',
+        memoryContext: context.memoryContext,
+        integrationSummary: context.integrationSummary,
+        integrationHighlights: context.integrationHighlights,
         integrationData: context.integrationData,
       });
 

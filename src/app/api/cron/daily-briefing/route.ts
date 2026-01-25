@@ -5,7 +5,9 @@ import {
   getTasksByUserId,
   getRecentActivities,
   getMilestonesByProjectId,
+  getIngestedItemsByUserId,
 } from '@/lib/db/queries';
+import { buildIntegrationSummary } from '@/services/ai/context/integration-context';
 
 // Verify cron secret to prevent unauthorized access
 function verifyCronSecret(request: NextRequest): boolean {
@@ -49,10 +51,15 @@ async function generateBriefingContent(
   projectName: string
 ): Promise<BriefingContent> {
   // Get recent data
-  const [tasks, activities, milestones] = await Promise.all([
+  const [tasks, activities, milestones, ingestedItems] = await Promise.all([
     getTasksByUserId(userId, projectId),
     getRecentActivities(userId, projectId, 7),
     getMilestonesByProjectId(projectId),
+    getIngestedItemsByUserId(userId, {
+      status: 'processed',
+      since: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+      limit: 200,
+    }),
   ]);
 
   // Calculate completed tasks in last 7 days
@@ -92,6 +99,8 @@ async function generateBriefingContent(
   const blockerPenalty = Math.min(oldPendingTasks.length * 5, 20);
   const momentumScore = Math.max(0, Math.min(100, activityScore + taskScore + milestoneScore - blockerPenalty));
 
+  const integrationSummary = buildIntegrationSummary(ingestedItems);
+
   // Generate summary based on activity
   let summary: string;
   if (momentumScore >= 70) {
@@ -100,6 +109,9 @@ async function generateBriefingContent(
     summary = `Steady progress on ${projectName}. A few focused sessions could boost your momentum.`;
   } else {
     summary = `${projectName} needs some attention. Let's get back on track today.`;
+  }
+  if (integrationSummary) {
+    summary += ` ${integrationSummary}.`;
   }
 
   // Generate blockers

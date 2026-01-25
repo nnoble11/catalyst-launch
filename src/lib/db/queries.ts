@@ -1,4 +1,4 @@
-import { eq, desc, and, asc, sql, gte, lte, inArray } from 'drizzle-orm';
+import { eq, desc, and, asc, sql, gte, lte, inArray, or } from 'drizzle-orm';
 import { db } from './client';
 import {
   users,
@@ -1046,6 +1046,7 @@ export async function getIngestedItemsByUserId(
     provider?: IntegrationProvider;
     itemType?: IngestItemType;
     status?: 'pending' | 'processed' | 'skipped' | 'failed';
+    since?: Date;
     limit?: number;
   }
 ) {
@@ -1059,6 +1060,9 @@ export async function getIngestedItemsByUserId(
   if (options?.status) {
     conditions.push(eq(ingestedItems.status, options.status));
   }
+  if (options?.since) {
+    conditions.push(gte(ingestedItems.createdAt, options.since));
+  }
 
   return db.query.ingestedItems.findMany({
     where: and(...conditions),
@@ -1068,6 +1072,46 @@ export async function getIngestedItemsByUserId(
       integration: true,
       capture: true,
     },
+  });
+}
+
+export async function searchIngestedItemsByUserId(
+  userId: string,
+  options: {
+    terms: string[];
+    status?: 'pending' | 'processed' | 'skipped' | 'failed';
+    since?: Date;
+    limit?: number;
+  }
+) {
+  const terms = options.terms
+    .map((term) => term.trim())
+    .filter((term) => term.length > 0);
+
+  const conditions = [eq(ingestedItems.userId, userId)];
+  if (options.status) {
+    conditions.push(eq(ingestedItems.status, options.status));
+  }
+  if (options.since) {
+    conditions.push(gte(ingestedItems.createdAt, options.since));
+  }
+
+  if (terms.length === 0) {
+    return [];
+  }
+
+  const termConditions = terms.map((term) => {
+    const pattern = `%${term.toLowerCase()}%`;
+    return or(
+      sql`lower(coalesce(${ingestedItems.title}, '')) like ${pattern}`,
+      sql`lower(coalesce(${ingestedItems.content}, '')) like ${pattern}`
+    );
+  });
+
+  return db.query.ingestedItems.findMany({
+    where: and(...conditions, or(...termConditions)),
+    orderBy: [desc(ingestedItems.createdAt)],
+    limit: options.limit ?? 50,
   });
 }
 
