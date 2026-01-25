@@ -132,6 +132,19 @@ function ChatPageContent() {
     fetchConversations();
   }, [selectedProject, fetchConversations]);
 
+  // Sync state with URL params when they change (e.g., browser back/forward)
+  useEffect(() => {
+    const conversationId = searchParams.get('conversationId');
+    const projectId = searchParams.get('projectId');
+
+    if (conversationId !== selectedConversation) {
+      setSelectedConversation(conversationId);
+    }
+    if (projectId !== selectedProject) {
+      setSelectedProject(projectId);
+    }
+  }, [searchParams, selectedConversation, selectedProject]);
+
   const createConversation = async () => {
     try {
       const response = await fetch('/api/conversations', {
@@ -301,6 +314,7 @@ function ChatPageContent() {
 
         {selectedConversation ? (
           <ChatInterface
+            key={selectedConversation}
             conversationId={selectedConversation}
             projectId={selectedProject || undefined}
             initialMessages={messages}

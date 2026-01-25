@@ -1,19 +1,35 @@
 import { NextResponse } from 'next/server';
 import { requireAuth, AuthError } from '@/lib/auth';
-import { getIntegrationsByUserId } from '@/lib/db/queries';
+import { getIntegrationsByUserId, getSyncStatesByUserId } from '@/lib/db/queries';
 
 export async function GET() {
   try {
     const user = await requireAuth();
-    const integrations = await getIntegrationsByUserId(user.id);
+    const [integrations, syncStates] = await Promise.all([
+      getIntegrationsByUserId(user.id),
+      getSyncStatesByUserId(user.id),
+    ]);
 
-    // Don't return sensitive tokens
-    const safeIntegrations = integrations.map((i) => ({
-      id: i.id,
-      provider: i.provider,
-      metadata: i.metadata,
-      createdAt: i.createdAt,
-    }));
+    // Create a map of sync states by integration ID
+    const syncStateMap = new Map(
+      syncStates.map((s) => [s.integrationId, s])
+    );
+
+    // Don't return sensitive tokens, but include sync state
+    const safeIntegrations = integrations.map((i) => {
+      const syncState = syncStateMap.get(i.id);
+      return {
+        id: i.id,
+        provider: i.provider,
+        metadata: i.metadata,
+        createdAt: i.createdAt,
+        lastSyncAt: syncState?.lastSyncAt,
+        lastSuccessfulSyncAt: syncState?.lastSuccessfulSyncAt,
+        syncStatus: syncState?.status,
+        syncError: syncState?.lastError,
+        totalItemsSynced: syncState?.totalItemsSynced,
+      };
+    });
 
     return NextResponse.json({ success: true, data: safeIntegrations });
   } catch (error) {

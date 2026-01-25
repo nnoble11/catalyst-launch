@@ -35,6 +35,11 @@ export function ChatInterface({
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Update messages when initialMessages changes (e.g., when switching conversations)
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
+
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

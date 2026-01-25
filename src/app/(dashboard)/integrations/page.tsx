@@ -90,8 +90,11 @@ interface IntegrationStatus {
   provider: string;
   connected: boolean;
   lastSyncAt?: string;
+  lastSuccessfulSyncAt?: string;
+  syncStatus?: string;
   error?: string;
   metadata?: Record<string, unknown>;
+  totalItemsSynced?: number;
 }
 
 interface IntegrationsResponse {
@@ -113,12 +116,25 @@ export default function IntegrationsPage() {
       if (response.ok) {
         const data = await response.json();
 
-        // Set connected integrations with metadata
+        // Set connected integrations with metadata and sync state
         setConnectedIntegrations(
-          data.data?.map((i: { provider: string; metadata?: Record<string, unknown> }) => ({
+          data.data?.map((i: {
+            provider: string;
+            metadata?: Record<string, unknown>;
+            lastSyncAt?: string;
+            lastSuccessfulSyncAt?: string;
+            syncStatus?: string;
+            syncError?: string;
+            totalItemsSynced?: number;
+          }) => ({
             provider: i.provider,
             connected: true,
             metadata: i.metadata,
+            lastSyncAt: i.lastSyncAt || i.lastSuccessfulSyncAt,
+            lastSuccessfulSyncAt: i.lastSuccessfulSyncAt,
+            syncStatus: i.syncStatus,
+            error: i.syncError,
+            totalItemsSynced: i.totalItemsSynced,
           })) || []
         );
       }
@@ -209,7 +225,8 @@ export default function IntegrationsPage() {
   const handleSync = async (provider: string) => {
     setSyncing(provider);
     try {
-      const response = await fetch(`/api/integrations/${provider}/sync`, {
+      const slug = providerIdToSlug(provider);
+      const response = await fetch(`/api/integrations/${slug}/sync`, {
         method: 'POST',
       });
 
@@ -218,7 +235,8 @@ export default function IntegrationsPage() {
         toast.success(`Synced ${data.data?.itemsProcessed || 0} items from ${provider}`);
         await fetchIntegrations(); // Refresh status
       } else {
-        toast.error('Sync failed');
+        const errorData = await response.json().catch(() => ({}));
+        toast.error(errorData.error || 'Sync failed');
       }
     } catch (error) {
       console.error('Sync error:', error);
@@ -443,9 +461,29 @@ export default function IntegrationsPage() {
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">
-                  Last sync: Recently
+                  {(() => {
+                    const syncTimes = connectedIntegrations
+                      .filter((i) => i.lastSyncAt)
+                      .map((i) => new Date(i.lastSyncAt!).getTime());
+                    if (syncTimes.length === 0) return 'No syncs yet';
+                    const mostRecent = Math.max(...syncTimes);
+                    const diffMs = Date.now() - mostRecent;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    if (diffMins < 1) return 'Last sync: Just now';
+                    if (diffMins < 60) return `Last sync: ${diffMins}m ago`;
+                    const diffHours = Math.floor(diffMins / 60);
+                    if (diffHours < 24) return `Last sync: ${diffHours}h ago`;
+                    return `Last sync: ${Math.floor(diffHours / 24)}d ago`;
+                  })()}
                 </span>
               </div>
+              {connectedIntegrations.some((i) => i.totalItemsSynced) && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>
+                    {connectedIntegrations.reduce((sum, i) => sum + (i.totalItemsSynced || 0), 0)} items synced
+                  </span>
+                </div>
+              )}
               {connectedIntegrations.some((i) => i.error) && (
                 <div className="flex items-center gap-2 text-sm text-amber-600">
                   <AlertCircle className="h-4 w-4" />

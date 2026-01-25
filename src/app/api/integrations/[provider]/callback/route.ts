@@ -6,7 +6,7 @@ import { normalizeProviderId } from '@/config/integrations';
 import { IntegrationSyncService } from '@/services/integrations/IntegrationSyncService';
 
 // Providers that don't need additional configuration before syncing
-const AUTO_SYNC_PROVIDERS = ['stripe', 'slack', 'notion', 'google_calendar', 'linear', 'todoist'];
+const AUTO_SYNC_PROVIDERS = ['stripe', 'slack', 'notion', 'google_calendar', 'gmail', 'linear', 'todoist'];
 
 /**
  * GET /api/integrations/[provider]/callback
