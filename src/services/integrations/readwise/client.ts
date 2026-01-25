@@ -206,7 +206,7 @@ export class ReadwiseIntegration extends BaseIntegration {
     options?: SyncOptions
   ): Promise<StandardIngestItem[]> {
     const items: StandardIngestItem[] = [];
-    let cursor: string | null = null;
+    let cursor: string | null = options?.cursor ?? null;
     const limit = options?.limit || 100;
 
     do {
@@ -237,6 +237,10 @@ export class ReadwiseIntegration extends BaseIntegration {
         await this.sleep(100);
       }
     } while (cursor && items.length < limit);
+
+    if (options) {
+      options.cursor = cursor ?? undefined;
+    }
 
     return items;
   }

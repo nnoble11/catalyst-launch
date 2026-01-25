@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, AuthError } from '@/lib/auth';
 import { integrationRegistry, validateOAuthState } from '@/services/integrations';
-import { upsertIntegration, upsertSyncState } from '@/lib/db/queries';
+import { incrementSyncErrorCount } from '@/lib/db/queries';
+import { db } from '@/lib/db/client';
+import { integrations, integrationSyncState } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { normalizeProviderId } from '@/config/integrations';
 import { IntegrationSyncService } from '@/services/integrations/IntegrationSyncService';
 
@@ -74,23 +77,55 @@ export async function GET(
       console.error('Failed to get account info:', e);
     }
 
-    // Save the integration
-    const savedIntegration = await upsertIntegration({
-      userId: user.id,
-      provider: provider,
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      expiresAt: tokens.expiresAt,
-      metadata: accountInfo,
-    });
+    const savedIntegration = await db.transaction(async (tx) => {
+      const [integration] = await tx
+        .insert(integrations)
+        .values({
+          userId: user.id,
+          provider: provider,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          expiresAt: tokens.expiresAt,
+          metadata: accountInfo,
+          updatedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [integrations.userId, integrations.provider],
+          set: {
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            expiresAt: tokens.expiresAt,
+            metadata: accountInfo,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
 
-    // Initialize sync state
-    await upsertSyncState({
-      userId: user.id,
-      integrationId: savedIntegration.id,
-      provider: provider,
-      status: 'pending',
-      nextSyncAt: new Date(), // Schedule immediate first sync
+      const existingSyncState = await tx.query.integrationSyncState.findFirst({
+        where: eq(integrationSyncState.integrationId, integration.id),
+      });
+
+      if (existingSyncState) {
+        await tx
+          .update(integrationSyncState)
+          .set({
+            status: 'pending',
+            nextSyncAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(integrationSyncState.id, existingSyncState.id));
+      } else {
+        await tx.insert(integrationSyncState).values({
+          userId: user.id,
+          integrationId: integration.id,
+          provider: provider,
+          status: 'pending',
+          nextSyncAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+
+      return integration;
     });
 
     // Trigger immediate first sync for providers that don't need configuration
@@ -99,6 +134,7 @@ export async function GET(
       const syncService = new IntegrationSyncService();
       syncService.syncIntegration(user.id, provider).catch((err) => {
         console.error(`[OAuth Callback] Background sync failed for ${provider}:`, err);
+        void incrementSyncErrorCount(savedIntegration.id, err instanceof Error ? err.message : 'Unknown error');
       });
     }
 

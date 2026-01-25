@@ -56,6 +56,7 @@ export async function GET(
 
     // Get account info if connected
     let accountInfo = integration.metadata || {};
+    let accountInfoStale = false;
     const integrationInstance = integrationRegistry.get(provider);
 
     if (integrationInstance) {
@@ -67,6 +68,7 @@ export async function GET(
         });
       } catch (e) {
         // Use cached metadata if fetching fails
+        accountInfoStale = true;
         console.error('Failed to fetch account info:', e);
       }
     }
@@ -77,6 +79,7 @@ export async function GET(
         connected: true,
         definition,
         accountInfo,
+        accountInfoStale,
         syncState: syncState
           ? {
               status: syncState.status,

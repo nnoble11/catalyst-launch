@@ -24,10 +24,12 @@ import {
   markIngestedItemProcessed,
   getIntegrationSyncState,
   upsertIntegration,
+  startSyncIfNotRunning,
 } from '@/lib/db/queries';
 import { BaseIntegration, IntegrationContext } from './base/BaseIntegration';
 import { integrationRegistry } from './registry';
 import { IngestionPipeline } from './ingestion/IngestionPipeline';
+import { createHash } from 'crypto';
 
 export class IntegrationSyncService {
   private pipeline: IngestionPipeline;
@@ -113,23 +115,40 @@ export class IntegrationSyncService {
         metadata: dbIntegration.metadata as Record<string, unknown> | undefined,
       };
 
-      // Update sync state to syncing
-      await upsertSyncState({
-        userId,
-        integrationId: dbIntegration.id,
-        provider,
-        status: 'syncing',
-      });
+      // Ensure sync state exists
+      let syncState = await getIntegrationSyncState(dbIntegration.id);
+      if (!syncState) {
+        await upsertSyncState({
+          userId,
+          integrationId: dbIntegration.id,
+          provider,
+          status: 'pending',
+          nextSyncAt: new Date(),
+        });
+        syncState = await getIntegrationSyncState(dbIntegration.id);
+      }
 
-      // Get sync state for cursor
-      const syncState = await getIntegrationSyncState(dbIntegration.id);
+      // Start sync if not already running
+      const started = await startSyncIfNotRunning(dbIntegration.id);
+      if (!started) {
+        result.errors.push({
+          message: `Sync already in progress for ${provider}`,
+          recoverable: true,
+        });
+        return result;
+      }
       const syncOptions: SyncOptions = {
         ...options,
       };
 
-      // If not full sync, use cursor from state
-      if (!options?.fullSync && syncState?.cursor) {
-        // Cursor is passed to the integration in the context
+      // If not full sync, use cursor/timestamps from state
+      if (!options?.fullSync) {
+        if (syncState?.cursor && !syncOptions.cursor) {
+          syncOptions.cursor = syncState.cursor;
+        }
+        if (!syncOptions.since) {
+          syncOptions.since = syncState?.lastItemTimestamp ?? syncState?.lastSuccessfulSyncAt ?? undefined;
+        }
       }
 
       // Perform sync
@@ -164,6 +183,7 @@ export class IntegrationSyncService {
         }
       }
 
+      const { latestTimestamp, latestSourceId } = this.getLatestItemMetadata(items);
       // Update sync state
       const totalSynced = (syncState?.totalItemsSynced ?? 0) + result.itemsCreated + result.itemsUpdated;
       await upsertSyncState({
@@ -173,6 +193,9 @@ export class IntegrationSyncService {
         status: 'completed',
         lastSyncAt: new Date(),
         lastSuccessfulSyncAt: new Date(),
+        cursor: syncOptions.cursor ?? syncState?.cursor ?? undefined,
+        lastItemId: latestSourceId ?? syncState?.lastItemId ?? undefined,
+        lastItemTimestamp: latestTimestamp ?? syncState?.lastItemTimestamp ?? undefined,
         totalItemsSynced: totalSynced,
         itemsSyncedThisRun: result.itemsProcessed,
         errorCount: 0,
@@ -192,6 +215,7 @@ export class IntegrationSyncService {
       // Get integration ID for error tracking
       const dbIntegration = await getIntegrationByProvider(userId, provider);
       if (dbIntegration) {
+        await updateSyncStateStatus(dbIntegration.id, 'failed', errorMessage);
         await incrementSyncErrorCount(dbIntegration.id, errorMessage);
       }
     }
@@ -259,13 +283,27 @@ export class IntegrationSyncService {
    * Generate a simple hash for content comparison
    */
   private generateHash(content: string): string {
-    let hash = 0;
-    for (let i = 0; i < content.length; i++) {
-      const char = content.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
+    return createHash('sha256').update(content).digest('hex');
+  }
+
+  private getLatestItemMetadata(items: StandardIngestItem[]): {
+    latestTimestamp?: Date;
+    latestSourceId?: string;
+  } {
+    let latestTimestamp: Date | undefined;
+    let latestSourceId: string | undefined;
+
+    for (const item of items) {
+      const candidate = item.metadata?.updatedAt ?? item.metadata?.timestamp;
+      if (!candidate) continue;
+
+      if (!latestTimestamp || candidate > latestTimestamp) {
+        latestTimestamp = candidate;
+        latestSourceId = item.sourceId;
+      }
     }
-    return hash.toString(16);
+
+    return { latestTimestamp, latestSourceId };
   }
 
   /**

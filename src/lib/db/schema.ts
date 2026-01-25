@@ -8,6 +8,7 @@ import {
   integer,
   jsonb,
   pgEnum,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -332,7 +333,12 @@ export const integrations = pgTable('integrations', {
   metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (table) => ({
+  userProviderUnique: uniqueIndex('integrations_user_provider_unique').on(
+    table.userId,
+    table.provider
+  ),
+}));
 
 // Integration Sync State table - Track sync progress, cursors, errors
 export const integrationSyncState = pgTable('integration_sync_state', {
@@ -406,7 +412,12 @@ export const ingestedItems = pgTable('ingested_items', {
 
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (table) => ({
+  integrationSourceUnique: uniqueIndex('ingested_items_integration_source_unique').on(
+    table.integrationId,
+    table.sourceId
+  ),
+}));
 
 // Webhook Subscriptions table - Manage webhook registrations
 export const webhookSubscriptions = pgTable('webhook_subscriptions', {

@@ -320,6 +320,7 @@ export interface SyncOptions {
   fullSync?: boolean; // Ignore cursor, sync everything
   limit?: number; // Max items per sync
   since?: Date; // Only sync items after this date
+  cursor?: string; // Provider-specific cursor for incremental sync
   types?: IngestItemType[]; // Only sync certain types
   dryRun?: boolean; // Don't actually save, just return items
 }

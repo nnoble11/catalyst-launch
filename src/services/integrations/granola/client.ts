@@ -119,7 +119,7 @@ export class GranolaIntegration extends ApiKeyIntegration {
     options?: SyncOptions
   ): Promise<StandardIngestItem[]> {
     const items: StandardIngestItem[] = [];
-    let cursor: string | undefined;
+    let cursor: string | undefined = options?.cursor;
     let hasMore = true;
     const limit = options?.limit || 50;
 
@@ -143,6 +143,10 @@ export class GranolaIntegration extends ApiKeyIntegration {
       if (hasMore) {
         await this.sleep(100);
       }
+    }
+
+    if (options) {
+      options.cursor = cursor;
     }
 
     return items;

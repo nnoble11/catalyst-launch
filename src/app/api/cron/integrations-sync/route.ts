@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPendingSyncs, updateSyncStateStatus, incrementSyncErrorCount } from '@/lib/db/queries';
+import { getPendingSyncs, incrementSyncErrorCount } from '@/lib/db/queries';
 import { IntegrationSyncService } from '@/services/integrations/IntegrationSyncService';
 
 // Verify cron secret to prevent unauthorized access
@@ -46,9 +46,6 @@ export async function GET(request: NextRequest) {
 
         results.processed++;
 
-        // Update status to syncing
-        await updateSyncStateStatus(syncState.integrationId, 'syncing');
-
         // Run the sync
         const syncResult = await syncService.syncIntegration(
           syncState.userId,
@@ -60,8 +57,12 @@ export async function GET(request: NextRequest) {
           results.totalItemsSynced += syncResult.itemsProcessed || 0;
           console.log(`[Integrations Sync Cron] Successfully synced ${syncState.provider} for user ${syncState.userId}: ${syncResult.itemsProcessed} items`);
         } else {
-          results.failed++;
           const errorMessage = syncResult.errors?.[0]?.message || 'Unknown error';
+          if (errorMessage.includes('already in progress')) {
+            console.log(`[Integrations Sync Cron] Skipping ${syncState.provider} for user ${syncState.userId}: ${errorMessage}`);
+            continue;
+          }
+          results.failed++;
           results.errors.push(`${syncState.provider}: ${errorMessage}`);
           await incrementSyncErrorCount(syncState.integrationId, errorMessage);
           console.error(`[Integrations Sync Cron] Failed to sync ${syncState.provider} for user ${syncState.userId}: ${errorMessage}`);

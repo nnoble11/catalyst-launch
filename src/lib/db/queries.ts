@@ -1,4 +1,4 @@
-import { eq, desc, and, asc, sql, gte, lte } from 'drizzle-orm';
+import { eq, desc, and, asc, sql, gte, lte, inArray } from 'drizzle-orm';
 import { db } from './client';
 import {
   users,
@@ -393,18 +393,14 @@ export async function upsertIntegration(data: {
   expiresAt?: Date;
   metadata?: Record<string, unknown>;
 }) {
-  const existing = await getIntegrationByProvider(data.userId, data.provider);
-
-  if (existing) {
-    const [integration] = await db
-      .update(integrations)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(integrations.id, existing.id))
-      .returning();
-    return integration;
-  }
-
-  const [integration] = await db.insert(integrations).values(data).returning();
+  const [integration] = await db
+    .insert(integrations)
+    .values(data)
+    .onConflictDoUpdate({
+      target: [integrations.userId, integrations.provider],
+      set: { ...data, updatedAt: new Date() },
+    })
+    .returning();
   return integration;
 }
 
@@ -958,6 +954,22 @@ export async function updateSyncStateStatus(
   return syncState;
 }
 
+export async function startSyncIfNotRunning(integrationId: string) {
+  const [syncState] = await db
+    .update(integrationSyncState)
+    .set({
+      status: 'syncing',
+      lastSyncAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(and(
+      eq(integrationSyncState.integrationId, integrationId),
+      inArray(integrationSyncState.status, ['pending', 'completed', 'failed'])
+    ))
+    .returning();
+  return syncState ?? null;
+}
+
 export async function incrementSyncErrorCount(integrationId: string, error: string) {
   const existing = await getIntegrationSyncState(integrationId);
   const currentCount = existing?.errorCount ?? 0;
@@ -1073,27 +1085,38 @@ export async function createIngestedItem(data: {
   metadata?: Record<string, unknown>;
   status?: 'pending' | 'processed' | 'skipped' | 'failed';
 }) {
-  // Check for existing item with same source ID
-  const existing = await getIngestedItemBySourceId(data.integrationId, data.sourceId);
-  if (existing) {
-    // Update if hash changed
-    if (data.sourceHash && data.sourceHash !== existing.sourceHash) {
-      const [item] = await db
-        .update(ingestedItems)
-        .set({
-          ...data,
-          status: 'pending', // Re-process on content change
-          updatedAt: new Date(),
-        })
-        .where(eq(ingestedItems.id, existing.id))
-        .returning();
-      return { item, isNew: false, updated: true };
-    }
-    return { item: existing, isNew: false, updated: false };
+  const [inserted] = await db
+    .insert(ingestedItems)
+    .values(data)
+    .onConflictDoNothing({
+      target: [ingestedItems.integrationId, ingestedItems.sourceId],
+    })
+    .returning();
+
+  if (inserted) {
+    return { item: inserted, isNew: true, updated: false };
   }
 
-  const [item] = await db.insert(ingestedItems).values(data).returning();
-  return { item, isNew: true, updated: false };
+  const existing = await getIngestedItemBySourceId(data.integrationId, data.sourceId);
+  if (!existing) {
+    const [fallback] = await db.insert(ingestedItems).values(data).returning();
+    return { item: fallback, isNew: true, updated: false };
+  }
+
+  if (data.sourceHash && data.sourceHash !== existing.sourceHash) {
+    const [item] = await db
+      .update(ingestedItems)
+      .set({
+        ...data,
+        status: 'pending',
+        updatedAt: new Date(),
+      })
+      .where(eq(ingestedItems.id, existing.id))
+      .returning();
+    return { item, isNew: false, updated: true };
+  }
+
+  return { item: existing, isNew: false, updated: false };
 }
 
 export async function updateIngestedItem(
