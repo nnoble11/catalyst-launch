@@ -137,13 +137,11 @@ function ChatPageContent() {
     const conversationId = searchParams.get('conversationId');
     const projectId = searchParams.get('projectId');
 
-    if (conversationId !== selectedConversation) {
-      setSelectedConversation(conversationId);
-    }
-    if (projectId !== selectedProject) {
-      setSelectedProject(projectId);
-    }
-  }, [searchParams, selectedConversation, selectedProject]);
+    setSelectedConversation(conversationId);
+    setSelectedProject(projectId);
+    // Only depend on searchParams - we want to sync FROM URL TO state
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const createConversation = async () => {
     try {
