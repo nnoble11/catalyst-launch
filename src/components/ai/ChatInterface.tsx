@@ -36,9 +36,12 @@ export function ChatInterface({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Update messages when initialMessages changes (e.g., when switching conversations)
+  // Use JSON stringify for stable comparison since array references change on each render
+  const initialMessagesKey = JSON.stringify(initialMessages.map(m => m.id));
   useEffect(() => {
     setMessages(initialMessages);
-  }, [initialMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessagesKey]);
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {

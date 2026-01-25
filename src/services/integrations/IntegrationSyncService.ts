@@ -23,6 +23,7 @@ import {
   createIngestedItem,
   markIngestedItemProcessed,
   getIntegrationSyncState,
+  upsertIntegration,
 } from '@/lib/db/queries';
 import { BaseIntegration, IntegrationContext } from './base/BaseIntegration';
 import { integrationRegistry } from './registry';
@@ -68,14 +69,46 @@ export class IntegrationSyncService {
         throw new Error(`User has not connected ${provider}`);
       }
 
-      // Create context
+      // Check if token needs refresh (expired or expiring within 5 minutes)
+      let accessToken = dbIntegration.accessToken;
+      const expiresAt = dbIntegration.expiresAt;
+      const refreshToken = dbIntegration.refreshToken;
+
+      if (expiresAt && refreshToken) {
+        const expirationBuffer = 5 * 60 * 1000; // 5 minutes
+        const isExpired = new Date(expiresAt).getTime() - Date.now() < expirationBuffer;
+
+        if (isExpired) {
+          console.log(`[Sync] Token expired for ${provider}, refreshing...`);
+          try {
+            const newTokens = await integration.refreshAccessToken(refreshToken);
+            accessToken = newTokens.accessToken;
+
+            // Update tokens in database
+            await upsertIntegration({
+              userId,
+              provider,
+              accessToken: newTokens.accessToken,
+              refreshToken: newTokens.refreshToken || refreshToken,
+              expiresAt: newTokens.expiresAt,
+              metadata: dbIntegration.metadata as Record<string, unknown>,
+            });
+            console.log(`[Sync] Token refreshed successfully for ${provider}`);
+          } catch (refreshError) {
+            console.error(`[Sync] Failed to refresh token for ${provider}:`, refreshError);
+            throw new Error(`Token refresh failed for ${provider}. Please reconnect the integration.`);
+          }
+        }
+      }
+
+      // Create context with potentially refreshed token
       const context: IntegrationContext = {
         userId,
         integrationId: dbIntegration.id,
         tokens: {
-          accessToken: dbIntegration.accessToken,
-          refreshToken: dbIntegration.refreshToken ?? undefined,
-          expiresAt: dbIntegration.expiresAt ?? undefined,
+          accessToken,
+          refreshToken: refreshToken ?? undefined,
+          expiresAt: expiresAt ?? undefined,
         },
         metadata: dbIntegration.metadata as Record<string, unknown> | undefined,
       };
