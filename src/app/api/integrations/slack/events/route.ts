@@ -26,9 +26,15 @@ export async function POST(request: NextRequest) {
   try {
     const body: SlackEventPayload = await request.json();
 
-    // URL verification challenge
-    if (body.type === 'url_verification') {
-      return NextResponse.json({ challenge: body.challenge });
+    console.log('[Slack Events] Received request type:', body.type);
+
+    // URL verification challenge - return plain text for reliability
+    if (body.type === 'url_verification' && body.challenge) {
+      console.log('[Slack Events] Responding to challenge');
+      return new Response(body.challenge, {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      });
     }
 
     // Handle slash commands
