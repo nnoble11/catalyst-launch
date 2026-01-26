@@ -1,4 +1,4 @@
-import { eq, desc, and, asc, sql, gte, lte, inArray, or } from 'drizzle-orm';
+import { eq, desc, and, asc, sql, gte, lte, inArray, or, type SQL } from 'drizzle-orm';
 import { db } from './client';
 import {
   users,
@@ -1286,7 +1286,7 @@ export async function searchIngestedEmbeddings(
   }
 
   const vectorLiteral = sql.raw(`'[${options.embedding.join(',')}]'`);
-  const conditions: unknown[] = [
+  const conditions: SQL[] = [
     sql`e.user_id = ${userId}`,
     sql`e.status = 'embedded'`,
   ];
