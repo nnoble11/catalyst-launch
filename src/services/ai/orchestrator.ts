@@ -7,6 +7,7 @@ import {
   buildIntegrationSummary,
   buildIntegrationHighlights,
 } from '@/services/ai/context/integration-context';
+import type { IntegrationProvider } from '@/types/integrations';
 
 export type AIProvider = 'openai' | 'anthropic';
 
@@ -131,7 +132,7 @@ ${contextSummary || 'No integration summary available.'}`;
 
   const tools = [
     {
-      type: 'function',
+      type: 'function' as const,
       function: {
         name: 'fetch_ingested_data',
         description: 'Fetch additional ingested data for deeper context.',
@@ -176,7 +177,7 @@ ${contextSummary || 'No integration summary available.'}`;
 
     const fetchResult = await fetchAdditionalIntegrationData(userId, {
       query: args.query,
-      provider: args.provider,
+      provider: args.provider as IntegrationProvider | undefined,
       itemTypes: args.itemTypes,
       sinceDays: args.sinceDays,
       limit: Math.min(Math.max(args.limit ?? 20, 10), 60),

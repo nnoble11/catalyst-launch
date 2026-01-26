@@ -1,4 +1,4 @@
-import type { IngestItemType } from '@/types/integrations';
+import type { IngestItemType, IntegrationProvider } from '@/types/integrations';
 import {
   getIngestedItemsByUserId,
   searchIngestedItemsByUserId,
@@ -301,7 +301,7 @@ export async function fetchAdditionalIntegrationData(
   userId: string,
   options: {
     query: string;
-    provider?: string;
+    provider?: IntegrationProvider;
     itemTypes?: string[];
     sinceDays?: number;
     limit?: number;
