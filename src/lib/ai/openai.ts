@@ -77,4 +77,25 @@ export async function generateStructuredOutput<T>(
   }
 }
 
+export async function generateChatCompletionWithTools(
+  messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
+  tools: OpenAI.Chat.Completions.ChatCompletionTool[],
+  options?: {
+    model?: string;
+    temperature?: number;
+    maxTokens?: number;
+  }
+) {
+  const response = await openai.chat.completions.create({
+    model: options?.model || AI_MODELS.openai.fast,
+    messages,
+    temperature: options?.temperature ?? 0,
+    max_tokens: options?.maxTokens ?? 256,
+    tools,
+    tool_choice: 'auto',
+  });
+
+  return response;
+}
+
 export { openai };

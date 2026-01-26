@@ -1,5 +1,10 @@
 import type { IngestItemType } from '@/types/integrations';
-import { getIngestedItemsByUserId, searchIngestedItemsByUserId } from '@/lib/db/queries';
+import {
+  getIngestedItemsByUserId,
+  searchIngestedItemsByUserId,
+  searchIngestedEmbeddings,
+} from '@/lib/db/queries';
+import { generateEmbedding } from '@/services/ai/embeddings';
 
 const STOPWORDS = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'for', 'from',
@@ -54,6 +59,25 @@ export function extractSearchTerms(
   const combinedText = [recentUserMessages, ...extraText].join(' ');
 
   const tokens = combinedText
+    .toLowerCase()
+    .replace(/[^a-z0-9@._-]+/g, ' ')
+    .split(' ')
+    .map((token) => token.trim())
+    .filter((token) => token.length > 2 && !STOPWORDS.has(token));
+
+  const counts = new Map<string, number>();
+  for (const token of tokens) {
+    counts.set(token, (counts.get(token) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)
+    .slice(0, maxTerms)
+    .map(([token]) => token);
+}
+
+export function extractTermsFromQuery(query: string, maxTerms = 8): string[] {
+  const tokens = query
     .toLowerCase()
     .replace(/[^a-z0-9@._-]+/g, ' ')
     .split(' ')
@@ -242,4 +266,94 @@ export function buildIntegrationHighlights(
         : undefined;
       return `${provider}: ${item.title}${date ? ` (${date})` : ''}`;
     });
+}
+
+export async function fetchAdditionalIntegrationData(
+  userId: string,
+  options: {
+    query: string;
+    provider?: string;
+    itemTypes?: string[];
+    sinceDays?: number;
+    limit?: number;
+  }
+): Promise<{ items: IntegrationContextItem[]; summary?: string; highlights?: string[] }> {
+  const now = new Date();
+  const since = options.sinceDays
+    ? new Date(now.getTime() - options.sinceDays * 24 * 60 * 60 * 1000)
+    : undefined;
+
+  const queryText = options.query.trim();
+  const embedding = queryText ? await generateEmbedding(queryText) : [];
+
+  let semanticItems: Array<{
+    id: string;
+    provider: string;
+    title?: string | null;
+    content?: string | null;
+    itemType: string;
+    sourceUrl?: string | null;
+    createdAt?: Date | null;
+    metadata?: unknown;
+  }> = [];
+
+  if (embedding.length > 0) {
+    semanticItems = await searchIngestedEmbeddings(userId, {
+      embedding,
+      provider: options.provider,
+      itemTypes: options.itemTypes,
+      since,
+      limit: options.limit ?? 25,
+    });
+  }
+
+  const keywordTerms = extractTermsFromQuery(queryText, 8);
+  const keywordItems = keywordTerms.length > 0
+    ? await searchIngestedItemsByUserId(userId, {
+        terms: keywordTerms,
+        status: 'processed',
+        since,
+        limit: options.limit ?? 25,
+      })
+    : [];
+
+  const filteredKeywordItems = keywordItems.filter((item) => {
+    if (options.provider && item.provider !== options.provider) {
+      return false;
+    }
+    if (options.itemTypes && options.itemTypes.length > 0 && !options.itemTypes.includes(item.itemType)) {
+      return false;
+    }
+    return true;
+  });
+
+  const uniqueItems = new Map<string, (typeof semanticItems)[number]>();
+  for (const item of semanticItems) {
+    uniqueItems.set(item.id, item);
+  }
+  for (const item of filteredKeywordItems) {
+    if (!uniqueItems.has(item.id)) {
+      uniqueItems.set(item.id, item);
+    }
+  }
+
+  const mergedItems = [...uniqueItems.values()]
+    .slice(0, options.limit ?? 30);
+
+  const summary = buildIntegrationSummary(mergedItems, now);
+  const highlights = buildIntegrationHighlights(mergedItems);
+
+  return {
+    items: mergedItems.map((item) => ({
+      provider: item.provider,
+      title: item.title ?? undefined,
+      content: item.content ?? undefined,
+      itemType: item.itemType,
+      sourceUrl: item.sourceUrl ?? undefined,
+      createdAt: item.createdAt ?? undefined,
+      metadata: item.metadata as IntegrationContextItem['metadata'],
+    })),
+    summary,
+    highlights,
+  };
 }

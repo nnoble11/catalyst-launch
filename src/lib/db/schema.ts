@@ -9,6 +9,7 @@ import {
   jsonb,
   pgEnum,
   uniqueIndex,
+  customType,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -179,6 +180,10 @@ export const decisionTriggerTypeEnum = pgEnum('decision_trigger_type', [
   'blocker_detected',
   'external_event',
 ]);
+
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType: () => 'vector(1536)',
+});
 
 // Users table
 export const users = pgTable('users', {
@@ -419,6 +424,30 @@ export const ingestedItems = pgTable('ingested_items', {
   ),
 }));
 
+// Ingested Item Embeddings table - semantic search support
+export const ingestedItemEmbeddings = pgTable('ingested_item_embeddings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  ingestedItemId: uuid('ingested_item_id')
+    .notNull()
+    .references(() => ingestedItems.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  provider: integrationProviderEnum('provider').notNull(),
+  itemType: ingestItemTypeEnum('item_type').notNull(),
+  contentHash: text('content_hash').notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  errorCount: integer('error_count').notNull().default(0),
+  lastError: text('last_error'),
+  embedding: vector('embedding'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  ingestedItemUnique: uniqueIndex('ingested_item_embeddings_ingested_item_unique').on(
+    table.ingestedItemId
+  ),
+}));
+
 // Webhook Subscriptions table - Manage webhook registrations
 export const webhookSubscriptions = pgTable('webhook_subscriptions', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -592,6 +621,22 @@ export const dailyBriefings = pgTable('daily_briefings', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
+// Integration Insights table - persistent AI insights from ingested data
+export const integrationInsights = pgTable('integration_insights', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  projectId: uuid('project_id').references(() => projects.id, { onDelete: 'set null' }),
+  summary: text('summary').notNull(),
+  insights: jsonb('insights').$type<string[]>().default([]),
+  recommendations: jsonb('recommendations').$type<string[]>().default([]),
+  nextSteps: jsonb('next_steps').$type<string[]>().default([]),
+  windowDays: integer('window_days').notNull().default(7),
+  generatedAt: timestamp('generated_at', { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
 // Decisions table - Weekly decision queue
 export const decisions = pgTable('decisions', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -697,7 +742,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   analyticsEvents: many(analyticsEvents),
   integrationSyncStates: many(integrationSyncState),
   ingestedItems: many(ingestedItems),
+  ingestedItemEmbeddings: many(ingestedItemEmbeddings),
   webhookSubscriptions: many(webhookSubscriptions),
+  integrationInsights: many(integrationInsights),
 }));
 
 export const projectsRelations = relations(projects, ({ one, many }) => ({
@@ -717,6 +764,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   tractionMetrics: many(tractionMetrics),
   dailyBriefings: many(dailyBriefings),
   decisions: many(decisions),
+  integrationInsights: many(integrationInsights),
 }));
 
 export const milestonesRelations = relations(milestones, ({ one }) => ({
@@ -808,6 +856,17 @@ export const ingestedItemsRelations = relations(ingestedItems, ({ one }) => ({
   capture: one(captures, {
     fields: [ingestedItems.captureId],
     references: [captures.id],
+  }),
+}));
+
+export const ingestedItemEmbeddingsRelations = relations(ingestedItemEmbeddings, ({ one }) => ({
+  user: one(users, {
+    fields: [ingestedItemEmbeddings.userId],
+    references: [users.id],
+  }),
+  ingestedItem: one(ingestedItems, {
+    fields: [ingestedItemEmbeddings.ingestedItemId],
+    references: [ingestedItems.id],
   }),
 }));
 
@@ -912,6 +971,17 @@ export const dailyBriefingsRelations = relations(dailyBriefings, ({ one }) => ({
   }),
   user: one(users, {
     fields: [dailyBriefings.userId],
+    references: [users.id],
+  }),
+}));
+
+export const integrationInsightsRelations = relations(integrationInsights, ({ one }) => ({
+  project: one(projects, {
+    fields: [integrationInsights.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [integrationInsights.userId],
     references: [users.id],
   }),
 }));

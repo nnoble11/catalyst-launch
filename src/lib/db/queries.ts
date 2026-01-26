@@ -19,15 +19,26 @@ import {
   documentVersions,
   integrationSyncState,
   ingestedItems,
+  ingestedItemEmbeddings,
   webhookSubscriptions,
   progressMilestones,
   tractionMetrics,
   dailyBriefings,
+  integrationInsights,
   decisions,
   decisionTriggers,
 } from './schema';
 import type { IntegrationProvider, SyncStatus, IngestItemType } from '@/types/integrations';
 import type { Stage, DocumentType, TaskStatus, TaskPriority, CaptureType, StreakType } from '@/config/constants';
+
+function unwrapRows<T>(result: unknown): T[] {
+  if (!result) return [];
+  if (Array.isArray(result)) return result as T[];
+  if (typeof result === 'object' && result && 'rows' in result) {
+    return (result as { rows: T[] }).rows;
+  }
+  return [];
+}
 
 // User queries
 export async function getUserByClerkId(clerkId: string) {
@@ -1115,6 +1126,222 @@ export async function searchIngestedItemsByUserId(
   });
 }
 
+// ===========================================
+// Ingested Item Embeddings queries
+// ===========================================
+
+export async function enqueueIngestedItemEmbedding(data: {
+  ingestedItemId: string;
+  userId: string;
+  provider: IntegrationProvider;
+  itemType: IngestItemType;
+  contentHash: string;
+}) {
+  const [embedding] = await db
+    .insert(ingestedItemEmbeddings)
+    .values({
+      ingestedItemId: data.ingestedItemId,
+      userId: data.userId,
+      provider: data.provider,
+      itemType: data.itemType,
+      contentHash: data.contentHash,
+      status: 'pending',
+      errorCount: 0,
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [ingestedItemEmbeddings.ingestedItemId],
+      set: {
+        contentHash: data.contentHash,
+        status: 'pending',
+        errorCount: 0,
+        lastError: undefined,
+        updatedAt: new Date(),
+      },
+    })
+    .returning();
+  return embedding;
+}
+
+export async function enqueueMissingEmbeddings(limit = 200) {
+  const result = await db.execute(sql`
+    insert into ingested_item_embeddings (
+      ingested_item_id,
+      user_id,
+      provider,
+      item_type,
+      content_hash,
+      status,
+      error_count,
+      created_at,
+      updated_at
+    )
+    select *
+    from (
+      select
+        i.id as ingested_item_id,
+        i.user_id,
+        i.provider,
+        i.item_type,
+        coalesce(i.source_hash, '') as content_hash,
+        'pending' as status,
+        0 as error_count,
+        now() as created_at,
+        now() as updated_at
+      from ingested_items i
+      left join ingested_item_embeddings e
+        on e.ingested_item_id = i.id
+      where e.id is null
+        and i.status = 'processed'
+        and i.content is not null
+      order by i.created_at desc
+      limit ${limit}
+    ) as pending
+    on conflict (ingested_item_id) do nothing
+  `);
+
+  return result;
+}
+
+export async function getPendingEmbeddings(limit = 50) {
+  const result = await db.execute(sql`
+    select
+      e.id as embedding_id,
+      e.ingested_item_id,
+      e.content_hash,
+      i.user_id,
+      i.provider,
+      i.item_type,
+      i.title,
+      i.content,
+      i.metadata,
+      i.source_url,
+      i.created_at
+    from ingested_item_embeddings e
+    join ingested_items i on i.id = e.ingested_item_id
+    where e.status = 'pending'
+    order by e.updated_at asc
+    limit ${limit}
+  `);
+
+  return unwrapRows<{
+    embedding_id: string;
+    ingested_item_id: string;
+    content_hash: string;
+    user_id: string;
+    provider: IntegrationProvider;
+    item_type: IngestItemType;
+    title: string | null;
+    content: string | null;
+    metadata: unknown;
+    source_url: string | null;
+    created_at: Date | null;
+  }>(result);
+}
+
+export async function storeEmbeddingVector(
+  embeddingId: string,
+  embedding: number[]
+) {
+  if (embedding.length === 0) {
+    return;
+  }
+  const vectorLiteral = sql.raw(`'[${embedding.join(',')}]'`);
+  await db.execute(sql`
+    update ingested_item_embeddings
+    set embedding = ${vectorLiteral}::vector,
+        status = 'embedded',
+        updated_at = now(),
+        last_error = null
+    where id = ${embeddingId}
+  `);
+}
+
+export async function markEmbeddingFailed(
+  embeddingId: string,
+  error: string
+) {
+  await db.execute(sql`
+    update ingested_item_embeddings
+    set error_count = error_count + 1,
+        last_error = ${error},
+        status = case when error_count + 1 >= 3 then 'failed' else 'pending' end,
+        updated_at = now()
+    where id = ${embeddingId}
+  `);
+}
+
+export async function searchIngestedEmbeddings(
+  userId: string,
+  options: {
+    embedding: number[];
+    provider?: IntegrationProvider;
+    itemTypes?: string[];
+    since?: Date;
+    limit?: number;
+  }
+) {
+  if (options.embedding.length === 0) {
+    return [];
+  }
+
+  const vectorLiteral = sql.raw(`'[${options.embedding.join(',')}]'`);
+  const conditions: unknown[] = [
+    sql`e.user_id = ${userId}`,
+    sql`e.status = 'embedded'`,
+  ];
+
+  if (options.provider) {
+    conditions.push(sql`i.provider = ${options.provider}`);
+  }
+  if (options.itemTypes && options.itemTypes.length > 0) {
+    const itemTypeParams = options.itemTypes.map((itemType) => sql`${itemType}`);
+    conditions.push(sql`i.item_type in (${sql.join(itemTypeParams, sql`, `)})`);
+  }
+  if (options.since) {
+    conditions.push(sql`i.created_at >= ${options.since}`);
+  }
+
+  const whereClause = sql.join(conditions, sql` and `);
+  const result = await db.execute(sql`
+    select
+      i.id,
+      i.provider,
+      i.item_type,
+      i.title,
+      i.content,
+      i.source_url,
+      i.metadata,
+      i.created_at,
+      e.embedding <=> ${vectorLiteral}::vector as distance
+    from ingested_item_embeddings e
+    join ingested_items i on i.id = e.ingested_item_id
+    where ${whereClause}
+    order by e.embedding <=> ${vectorLiteral}::vector asc
+    limit ${options.limit ?? 25}
+  `);
+
+  return unwrapRows<{
+    id: string;
+    provider: IntegrationProvider;
+    item_type: IngestItemType;
+    title: string | null;
+    content: string | null;
+    source_url: string | null;
+    metadata: unknown;
+    created_at: Date | null;
+  }>(result).map((row) => ({
+    id: row.id,
+    provider: row.provider,
+    itemType: row.item_type,
+    title: row.title,
+    content: row.content,
+    sourceUrl: row.source_url,
+    metadata: row.metadata,
+    createdAt: row.created_at,
+  }));
+}
+
 export async function createIngestedItem(data: {
   userId: string;
   integrationId: string;
@@ -1477,6 +1704,44 @@ export async function getDailyBriefings(userId: string, projectId?: string, limi
     where: and(...conditions),
     orderBy: [desc(dailyBriefings.briefingDate)],
     limit,
+  });
+}
+
+// ===========================================
+// Integration Insights queries
+// ===========================================
+
+export async function createIntegrationInsight(data: {
+  userId: string;
+  projectId?: string;
+  summary: string;
+  insights?: string[];
+  recommendations?: string[];
+  nextSteps?: string[];
+  windowDays?: number;
+}) {
+  const [insight] = await db.insert(integrationInsights).values({
+    userId: data.userId,
+    projectId: data.projectId,
+    summary: data.summary,
+    insights: data.insights ?? [],
+    recommendations: data.recommendations ?? [],
+    nextSteps: data.nextSteps ?? [],
+    windowDays: data.windowDays ?? 7,
+    generatedAt: new Date(),
+  }).returning();
+  return insight;
+}
+
+export async function getLatestIntegrationInsight(userId: string, projectId?: string) {
+  const conditions = [eq(integrationInsights.userId, userId)];
+  if (projectId) {
+    conditions.push(eq(integrationInsights.projectId, projectId));
+  }
+
+  return db.query.integrationInsights.findFirst({
+    where: and(...conditions),
+    orderBy: [desc(integrationInsights.generatedAt)],
   });
 }
 

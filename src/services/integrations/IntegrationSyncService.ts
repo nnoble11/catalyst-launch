@@ -25,11 +25,13 @@ import {
   getIntegrationSyncState,
   upsertIntegration,
   startSyncIfNotRunning,
+  enqueueIngestedItemEmbedding,
 } from '@/lib/db/queries';
 import { BaseIntegration, IntegrationContext } from './base/BaseIntegration';
 import { integrationRegistry } from './registry';
 import { IngestionPipeline } from './ingestion/IngestionPipeline';
 import { createHash } from 'crypto';
+import { buildEmbeddingText, hashEmbeddingText } from '@/services/ai/embeddings';
 
 export class IntegrationSyncService {
   private pipeline: IngestionPipeline;
@@ -256,6 +258,17 @@ export class IntegrationSyncService {
 
     if (dryRun) {
       return { created: isNew, updated };
+    }
+
+    const embeddingText = buildEmbeddingText(item.title, item.content);
+    if (embeddingText) {
+      await enqueueIngestedItemEmbedding({
+        ingestedItemId: ingestedItem.id,
+        userId,
+        provider,
+        itemType: item.type,
+        contentHash: hashEmbeddingText(embeddingText),
+      });
     }
 
     // Process through ingestion pipeline

@@ -74,6 +74,13 @@ export function buildContextualPrompt(context: {
   memoryContext?: string;
   integrationSummary?: string;
   integrationHighlights?: string[];
+  integrationInsights?: {
+    summary: string;
+    insights?: string[];
+    recommendations?: string[];
+    nextSteps?: string[];
+    generatedAt?: Date;
+  };
   integrationData?: IntegrationContext[];
 }): string {
   let prompt = `${BASE_SYSTEM_PROMPT}\n\n`;
@@ -198,6 +205,30 @@ export function buildContextualPrompt(context: {
       });
       prompt += '\n';
     }
+  }
+
+  if (context.integrationInsights) {
+    prompt += `\n## Integration Insights\n`;
+    prompt += `${context.integrationInsights.summary}\n`;
+    if (context.integrationInsights.insights && context.integrationInsights.insights.length > 0) {
+      prompt += `Insights:\n`;
+      context.integrationInsights.insights.forEach((insight) => {
+        prompt += `- ${insight}\n`;
+      });
+    }
+    if (context.integrationInsights.recommendations && context.integrationInsights.recommendations.length > 0) {
+      prompt += `Recommendations:\n`;
+      context.integrationInsights.recommendations.forEach((rec) => {
+        prompt += `- ${rec}\n`;
+      });
+    }
+    if (context.integrationInsights.nextSteps && context.integrationInsights.nextSteps.length > 0) {
+      prompt += `Next steps:\n`;
+      context.integrationInsights.nextSteps.forEach((step) => {
+        prompt += `- ${step}\n`;
+      });
+    }
+    prompt += '\n';
   }
 
   return prompt;

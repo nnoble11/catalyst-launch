@@ -22,6 +22,20 @@
       "when": 1768854802856,
       "tag": "0002_add_integration_uniques",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768854802857,
+      "tag": "0003_add_ingested_item_embeddings",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1768854802858,
+      "tag": "0004_add_integration_insights",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,12 @@
 import { NextRequest } from 'next/server';
 import { requireAuth, AuthError } from '@/lib/auth';
-import { getProjectById, createMessage, createActivity, updateConversation } from '@/lib/db/queries';
+import {
+  getProjectById,
+  createMessage,
+  createActivity,
+  updateConversation,
+  getLatestIntegrationInsight,
+} from '@/lib/db/queries';
 import { streamChat, type AIProvider } from '@/services/ai/orchestrator';
 import { createSSEStream } from '@/services/ai/streaming';
 import { buildMemoryContext } from '@/services/ai/memory-manager';
@@ -40,6 +46,13 @@ export async function POST(request: NextRequest) {
       integrationData?: { provider: string; title?: string; content?: string; itemType?: string; sourceUrl?: string; createdAt?: Date }[];
       integrationSummary?: string;
       integrationHighlights?: string[];
+      integrationInsights?: {
+        summary: string;
+        insights?: string[];
+        recommendations?: string[];
+        nextSteps?: string[];
+        generatedAt?: Date;
+      };
       memoryContext?: string;
     } = {};
 
@@ -61,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     // Fetch integration data and memory context for AI
     try {
-      const [memoryContext, integrationContext] = await Promise.all([
+      const [memoryContext, integrationContext, insight] = await Promise.all([
         buildMemoryContext(user.id, projectId),
         buildIntegrationContext(user.id, {
           messages,
@@ -74,6 +87,7 @@ export async function POST(request: NextRequest) {
           recentDays: 90,
           maxPerProvider: 12,
         }),
+        getLatestIntegrationInsight(user.id, projectId),
       ]);
 
       if (memoryContext) {
@@ -83,6 +97,15 @@ export async function POST(request: NextRequest) {
         context.integrationData = integrationContext.items;
         context.integrationSummary = integrationContext.summary;
         context.integrationHighlights = integrationContext.highlights;
+      }
+      if (insight) {
+        context.integrationInsights = {
+          summary: insight.summary,
+          insights: insight.insights ?? undefined,
+          recommendations: insight.recommendations ?? undefined,
+          nextSteps: insight.nextSteps ?? undefined,
+          generatedAt: insight.generatedAt ?? undefined,
+        };
       }
     } catch {
       // Non-critical: integration data fetch failure shouldn't block chat
@@ -96,7 +119,7 @@ export async function POST(request: NextRequest) {
       try {
         let fullResponse = '';
 
-        for await (const chunk of streamChat(messages, context, provider)) {
+        for await (const chunk of streamChat(messages, context, provider, { userId: user.id })) {
           sendText(chunk);
           fullResponse += chunk;
         }
