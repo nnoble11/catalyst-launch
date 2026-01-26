@@ -151,6 +151,30 @@ function selectDiverseItems<T extends { provider: string }>(
   return selected.slice(0, options.maxItems);
 }
 
+type IngestedItemBase = {
+  id: string;
+  provider: string;
+  title?: string | null;
+  content?: string | null;
+  itemType: string;
+  sourceUrl?: string | null;
+  metadata?: unknown;
+  createdAt?: Date | null;
+};
+
+function normalizeIngestedItem(item: IngestedItemBase): IngestedItemBase {
+  return {
+    id: item.id,
+    provider: item.provider,
+    title: item.title ?? null,
+    content: item.content ?? null,
+    itemType: item.itemType,
+    sourceUrl: item.sourceUrl ?? null,
+    metadata: item.metadata,
+    createdAt: item.createdAt ?? null,
+  };
+}
+
 export async function buildIntegrationContext(
   userId: string,
   options: {
@@ -190,9 +214,14 @@ export async function buildIntegrationContext(
       : Promise.resolve([]),
   ]);
 
-  const uniqueItems = new Map<string, (typeof recentItems)[number]>();
-  for (const item of [...recentItems, ...searchItems]) {
-    uniqueItems.set(item.id, item);
+  const uniqueItems = new Map<string, IngestedItemBase>();
+  for (const item of recentItems) {
+    uniqueItems.set(item.id, normalizeIngestedItem(item));
+  }
+  for (const item of searchItems) {
+    if (!uniqueItems.has(item.id)) {
+      uniqueItems.set(item.id, normalizeIngestedItem(item));
+    }
   }
 
   const scoredItems = [...uniqueItems.values()]
